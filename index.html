@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coach Olegich — Тесты</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .card {
+      display: block;
+      background: white;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+    }
+    .card:hover {
+      border-color: #94a3b8;
+      box-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
+      transform: translateY(-2px);
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .card-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    .card-desc {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.55;
+    }
+    .footer-text {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="logo">Coach Olegich</div>
+    <div class="subtitle">Выберите тест для прохождения</div>
+
+    <a class="card" href="gardner-intelligence.html">
+      <div class="card-top">
+        <div class="card-dot" style="background:#0d9488"></div>
+        <div class="card-title">Множественные интеллекты Гарднера</div>
+        <div class="card-meta">80 вопросов</div>
+      </div>
+      <div class="card-desc">Определите ваш уникальный профиль интеллектов — 8 типов мышления и способностей.</div>
+    </a>
+
+    <a class="card" href="holland-riasec.html">
+      <div class="card-top">
+        <div class="card-dot" style="background:#4f46e5"></div>
+        <div class="card-title">Профессиональные типы Холланда</div>
+        <div class="card-meta">42 вопроса</div>
+      </div>
+      <div class="card-desc">Определите ваш профессиональный тип по методике RIASEC — какая работа вам подходит.</div>
+    </a>
+
+    <a class="card" href="garbuzov-instincts.html">
+      <div class="card-top">
+        <div class="card-dot" style="background:#7c3aed"></div>
+        <div class="card-title">Доминирующий инстинкт Гарбузова</div>
+        <div class="card-meta">35 вопросов</div>
+      </div>
+      <div class="card-desc">Узнайте свой ведущий инстинкт — глубинную мотивацию, которая определяет ваши реакции.</div>
+    </a>
+
+    <div class="footer-text">Coach Olegich 2026</div>
+  </div>
+</body>
+</html>

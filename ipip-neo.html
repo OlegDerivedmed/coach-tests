@@ -232,83 +232,6 @@
       margin-bottom: 16px;
     }
     .copy-btn:hover { background: var(--primary-dark); }
-
-    .chart-section {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 18px 16px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-    }
-    .chart-title {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-
-    .bar-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .bar-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      min-width: 110px;
-      color: var(--text);
-    }
-    .bar-track {
-      flex: 1;
-      height: 20px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%;
-      border-radius: 6px;
-      transition: width 0.9s cubic-bezier(0.25, 1, 0.5, 1);
-      width: 0%;
-    }
-    .bar-score {
-      font-size: 0.72rem;
-      font-weight: 700;
-      min-width: 28px;
-      text-align: right;
-      color: var(--muted);
-    }
-
-    .factor-N .bar-fill { background: linear-gradient(90deg, #f87171, #ef4444); }
-    .factor-E .bar-fill { background: linear-gradient(90deg, #fb923c, #f97316); }
-    .factor-O .bar-fill { background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
-    .factor-A .bar-fill { background: linear-gradient(90deg, #34d399, #10b981); }
-    .factor-C .bar-fill { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
-
-    .facet-bar-fill { background: #cbd5e1; }
-
-    .factor-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 18px 0 10px;
-    }
-    .factor-badge {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 800; color: white;
-    }
-    .badge-N { background: #ef4444; }
-    .badge-E { background: #f97316; }
-    .badge-O { background: #8b5cf6; }
-    .badge-A { background: #10b981; }
-    .badge-C { background: #3b82f6; }
-    .factor-name { font-size: 0.9rem; font-weight: 700; }
-    .factor-score-big { font-size: 0.9rem; font-weight: 800; margin-left: auto; }
   </style>
 </head>
 <body>
@@ -340,20 +263,20 @@
   <div class="questions" id="questionsContainer"></div>
 
   <div class="footer">
-    <button class="submit-btn" id="submitBtn" disabled onclick="showResults()">Получить результаты</button>
+    <button class="submit-btn" id="submitBtn" disabled onclick="showResults()">Завершить тест</button>
     <div class="remaining-note" id="remainingNote">Ответьте на все 120 вопросов</div>
   </div>
 </div>
 
 <div class="results-page" id="resultsPage">
-  <div class="results-title">Ваш профиль личности</div>
-  <div class="results-subtitle">IPIP-NEO-120 · <span id="resultDate"></span></div>
+  <div style="text-align:center; margin: 24px 0 16px; font-size: 2rem;">✅</div>
+  <div class="results-title">Тест пройден!</div>
+  <div class="results-subtitle">Скопируйте текст ниже и отправьте коучу — в Telegram, WhatsApp или по email.</div>
 
-  <div class="copy-box-label">Скопируйте и отправьте коучу:</div>
+  <div class="copy-box-label">Ваши ответы для коуча</div>
   <div class="copy-box" id="copyBox">—</div>
-  <button class="copy-btn" onclick="copyResults()">Скопировать результаты</button>
-
-  <div id="chartsContainer"></div>
+  <button class="copy-btn" onclick="copyResults()">Скопировать</button>
+  <div style="text-align:center; font-size:0.74rem; color:var(--muted); line-height:1.5; margin-top:4px;">После копирования отправьте этот текст коучу.<br>Можно сделать скриншот этого экрана.</div>
 </div>
 
 <script>
@@ -630,64 +553,17 @@ function computeScores() {
 }
 
 function showResults() {
-  const {facetScores, factorScores} = computeScores();
   const today = new Date().toISOString().slice(0,10);
 
-  // Build export string
+  // Build export string (raw answers for coach only)
   const parts = answers.map((a,i) => `${i+1}:${a}`).join(' ');
   const exportStr = `ТЕСТ: ipip-neo\nДАТА: ${today}\n${parts}`;
   document.getElementById('copyBox').textContent = exportStr;
-  document.getElementById('resultDate').textContent = today;
-
-  // Build charts
-  const charts = document.getElementById('chartsContainer');
-  charts.innerHTML = '';
-
-  ['N','E','O','A','C'].forEach(factor => {
-    const sec = document.createElement('div');
-    sec.className = 'chart-section';
-
-    const fs = factorScores[factor];
-    const pct = ((fs - 24) / 96) * 100;
-
-    sec.innerHTML = `
-      <div class="factor-header">
-        <div class="factor-badge badge-${factor}">${factor}</div>
-        <div class="factor-name">${FACTOR_NAMES[factor]}</div>
-        <div class="factor-score-big factor-${factor}" style="color:var(--primary)">${fs} / 120</div>
-      </div>
-      <div class="bar-row factor-${factor}" style="margin-bottom:16px">
-        <div class="bar-track" style="height:24px">
-          <div class="bar-fill" style="width:${pct}%"></div>
-        </div>
-      </div>
-      <div class="chart-title">Фасеты</div>
-      ${FACETS.filter(f=>f.factor===factor).map(f => {
-        const score = facetScores[f.code];
-        const fp = ((score-4)/16)*100;
-        return `<div class="bar-row">
-          <div class="bar-label">${f.code}: ${f.name}</div>
-          <div class="bar-track"><div class="bar-fill facet-bar-fill" style="width:${fp}%"></div></div>
-          <div class="bar-score">${score}</div>
-        </div>`;
-      }).join('')}
-    `;
-    charts.appendChild(sec);
-  });
 
   document.getElementById('testPage').style.display = 'none';
   const rp = document.getElementById('resultsPage');
   rp.classList.add('visible');
   window.scrollTo(0,0);
-
-  // Animate bars
-  setTimeout(() => {
-    document.querySelectorAll('.bar-fill').forEach(b => {
-      const w = b.style.width;
-      b.style.width = '0%';
-      requestAnimationFrame(() => { b.style.width = w; });
-    });
-  }, 100);
 }
 
 function copyResults() {

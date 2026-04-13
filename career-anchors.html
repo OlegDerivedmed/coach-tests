@@ -57,6 +57,36 @@
       line-height: 1.6;
       color: var(--text);
     }
+    .instruction-warn {
+      margin: 10px 16px 0;
+      padding: 10px 14px;
+      background: #fff7ed;
+      border-left: 3px solid #f97316;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: #7c2d12;
+    }
+    .instruction-warn strong { color: #c2410c; }
+
+    /* ── BORDER COUNTER ── */
+    .border-counter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      padding: 2px 0;
+    }
+    .border-counter-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .border-counter.warn { color: #c2410c; font-weight: 600; }
+    .border-counter.warn .border-counter-dot { background: #f97316; }
 
     /* ── SECTION LABELS ── */
     .section-label {
@@ -228,11 +258,19 @@
   <strong>Вопросы 22–41</strong> — насколько вы <em>согласны</em> с каждым утверждением?<br>
   Шкала: <strong>1</strong> = совершенно не важно / не согласен &nbsp;&nbsp; <strong>10</strong> = исключительно важно / полностью согласен
 </div>
+<div class="instruction-warn">
+  <strong>Важно:</strong> Отнеситесь к тесту серьёзно — от этого зависит точность результата.<br>
+  Старайтесь избегать «пограничных» оценок: <strong>5 и 6</strong> означают «не знаю» и размывают картину — таких оценок на весь тест не должно быть больше 8–9. <strong>1 и 10</strong> — крайние значения, используйте их только если утверждение действительно абсолютно не важно или критически важно для вас.
+</div>
 
 <div class="section-label">Насколько важно — вопросы 1–21</div>
 <div class="question-list" id="questionList"></div>
 
 <div class="bottom-bar">
+  <div class="border-counter" id="borderCounter">
+    <div class="border-counter-dot" id="borderDot"></div>
+    <span id="borderText">Пограничных оценок (5–6): 0</span>
+  </div>
   <div class="hint-text" id="hintText">Ответьте на все вопросы, чтобы завершить тест</div>
   <button class="submit-btn" id="submitBtn" disabled onclick="openResult()">Готово →</button>
 </div>
@@ -387,6 +425,23 @@ function updateProgress() {
   } else {
     btn.disabled = true;
     hint.textContent = 'Осталось: ' + (total - count) + ' ' + plural(total - count, 'вопрос', 'вопроса', 'вопросов');
+  }
+
+  // Border score counter (5 or 6)
+  var borderCount = Object.values(answers).filter(function(v) { return v === 5 || v === 6; }).length;
+  var counterEl = document.getElementById('borderCounter');
+  var textEl = document.getElementById('borderText');
+  var limit = 9;
+
+  if (borderCount > limit) {
+    textEl.textContent = 'Пограничных оценок (5–6): ' + borderCount + ' — слишком много, пересмотрите ответы';
+    counterEl.classList.add('warn');
+  } else if (borderCount > 0) {
+    textEl.textContent = 'Пограничных оценок (5–6): ' + borderCount + ' из ' + limit + ' допустимых';
+    counterEl.classList.remove('warn');
+  } else {
+    textEl.textContent = 'Пограничных оценок (5–6): 0';
+    counterEl.classList.remove('warn');
   }
 }
 

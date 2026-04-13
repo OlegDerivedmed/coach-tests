@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профессиональная идентичность — МИПИ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1d4ed8;
+      --primary-light: #dbeafe;
+      --primary-dark: #1e40af;
+      --text: #1e293b;
+      --muted: #64748b;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 18px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgb(29 78 216 / 0.35);
+    }
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+    .header h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .header-meta { font-size: 0.75rem; opacity: 0.75; white-space: nowrap; }
+    .counter-row { display: flex; align-items: center; gap: 10px; }
+    .counter-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+    .counter-fill { height: 100%; background: white; border-radius: 3px; transition: width 0.25s ease; width: 0%; }
+    .counter-label { font-size: 0.7rem; opacity: 0.9; white-space: nowrap; min-width: 70px; text-align: right; }
+
+    /* ── INSTRUCTION ── */
+    .instruction {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    .instruction p {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.55;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .instruction .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── WORDS GRID ── */
+    .words-wrap {
+      padding: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .words-wrap h2 {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .words-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 15px;
+      border-radius: 22px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1.5px solid transparent;
+      transition: background 0.13s, color 0.13s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chip:hover { background: #e2e8f0; transform: translateY(-1px); }
+    .chip.on {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .chip.on:hover { background: var(--primary-dark); }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 20;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    }
+    .remaining-note { font-size: 0.8rem; color: var(--muted); }
+    .submit-btn {
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+    .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* ── OVERLAY (bottom sheet) ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      background: var(--card);
+      width: 100%;
+      max-height: 85vh;
+      border-radius: 20px 20px 0 0;
+      padding: 12px 20px 32px;
+      overflow-y: auto;
+      transform: translateY(40px);
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+
+    .handle {
+      width: 36px; height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+    .sheet-icon { text-align: center; font-size: 2rem; margin-bottom: 8px; }
+    .sheet-title { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .sheet-desc {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .export-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .export-box {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .copy-btn {
+      display: block;
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 10px;
+    }
+    .copy-btn:hover { background: var(--primary-dark); }
+    .copy-btn.copied { background: var(--success); }
+
+    .copy-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Профессиональная идентичность</h1>
+    <span class="header-meta">МИПИ · Шнейдер</span>
+  </div>
+  <div class="counter-row">
+    <div class="counter-bar"><div class="counter-fill" id="counterFill"></div></div>
+    <span class="counter-label" id="counterLabel">0 отмечено</span>
+  </div>
+</div>
+
+<div class="instruction">
+  <p>Отметьте слова, которые имеют отношение к вам и вашей профессиональной жизни.</p>
+  <p class="note">Нет правильных и неправильных ответов. Работайте быстро — выбирайте по первому ощущению.</p>
+</div>
+
+<div class="words-wrap">
+  <h2>Слова</h2>
+  <div class="words-grid" id="wordsGrid"></div>
+</div>
+
+<div class="bottom-bar">
+  <div class="remaining-note" id="remainingNote">Выберите слова, которые относятся к вам</div>
+  <button class="submit-btn" id="submitBtn" onclick="openResult()">Готово</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-icon">✅</div>
+    <div class="sheet-title">Тест пройден!</div>
+    <div class="sheet-desc">Скопируйте текст ниже и отправьте его своему коучу — в Telegram, WhatsApp или по email.</div>
+    <div class="export-label">Ваши ответы для коуча</div>
+    <div class="export-box" id="exportBox"></div>
+    <button class="copy-btn" id="copyBtn">Скопировать</button>
+    <div class="copy-hint">После копирования отправьте этот текст коучу.<br>Можно сделать скриншот этого экрана.</div>
+  </div>
+</div>
+
+<script>
+// ── WORD LIST (mixed order, 74 words) ──────────────────────────────────────
+// Source: Шнейдер Л.Б. Таблица 13, с. 58. МПСИ, 2007.
+const WORDS = [
+  'Знания','Активность','Лень','Компетентность','Опыт','Дилетантство',
+  'Мастерство','Навык','Наивность','Ответственность','Творчество','Безволие',
+  'Труд','Ошибки','Профессионализм','Образованность','Кризис','Самостоятельность',
+  'Уверенность','Пессимизм','Дисциплина','Квалификация','Безработица','Надежность',
+  'Упорство','Тревога','Успешность','Признание','Начинающий','Азарт','Скука',
+  'Старания','Общение','Промахи','Поддержка','Эффективность','Зануда',
+  'Внимательность','Запросы','Совершенствование','Усердие','Хобби','Собранность',
+  'Ловкость','Самолюбие','Карьера','Медлительность','Похвала','Разноплановость',
+  'Нереализованность','Умение','Проба','Экзамен','Работяга','Ученичество',
+  'Четкость','Претензии','Цель','Удовлетворенность','Растерянность',
+  'Преданность делу','Неопытность','Уважение','Безделушки','Удача','Обучающийся',
+  'Подготовка','Неразборчивость','Определившийся','Неспособность','Независимость',
+  'Переоценка своих возможностей','Энтузиазм','Сравнение'
+];
+
+const TOTAL = WORDS.length; // 74
+const selected = new Set();
+
+// ── RENDER CHIPS ────────────────────────────────────────────────────────────
+(function init() {
+  var grid = document.getElementById('wordsGrid');
+  WORDS.forEach(function(word) {
+    var btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.type = 'button';
+    btn.textContent = word;
+    btn.dataset.word = word;
+    btn.addEventListener('click', function() { toggle(btn, word); });
+    grid.appendChild(btn);
+  });
+})();
+
+function toggle(btn, word) {
+  if (selected.has(word)) {
+    selected.delete(word);
+    btn.classList.remove('on');
+  } else {
+    selected.add(word);
+    btn.classList.add('on');
+  }
+  updateUI();
+}
+
+function updateUI() {
+  var n = selected.size;
+  var pct = Math.min(n / 20, 1) * 100; // bar fills at ~20 words selected
+  document.getElementById('counterFill').style.width = pct + '%';
+  document.getElementById('counterLabel').textContent = n + '\u00a0отмечено';
+  document.getElementById('remainingNote').textContent =
+    n === 0 ? 'Выберите слова, которые относятся к вам'
+    : n < 5  ? 'Отмечено: ' + n + '. Продолжайте...'
+    : 'Отмечено: ' + n + ' слов';
+}
+
+// ── BUILD EXPORT STRING ──────────────────────────────────────────────────────
+function buildExport() {
+  var today = new Date().toISOString().slice(0, 10);
+  var words = WORDS.filter(function(w) { return selected.has(w); });
+  return [
+    'ТЕСТ: mipi-identity',
+    'ДАТА: ' + today,
+    'ВЫБРАНО (' + words.length + '): ' + (words.length ? words.join(', ') : '—')
+  ].join('\n');
+}
+
+// ── OPEN RESULT OVERLAY ──────────────────────────────────────────────────────
+function openResult() {
+  document.getElementById('exportBox').textContent = buildExport();
+  document.getElementById('overlay').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── COPY BUTTON ──────────────────────────────────────────────────────────────
+document.getElementById('copyBtn').addEventListener('click', function() {
+  var text = document.getElementById('exportBox').textContent;
+  var btn = document.getElementById('copyBtn');
+
+  function markCopied() {
+    btn.textContent = 'Скопировано ✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Скопировать';
+      btn.classList.remove('copied');
+    }, 3500);
+  }
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallback);
+  } else { fallback(); }
+
+  function fallback() {
+    var el = document.getElementById('exportBox');
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    try { document.execCommand('copy'); markCopied(); } catch(e) {}
+    sel.removeAllRanges();
+  }
+});
+
+// ── CLOSE OVERLAY ON BACKDROP CLICK ─────────────────────────────────────────
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>

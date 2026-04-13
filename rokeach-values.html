@@ -17,31 +17,40 @@
     .tab{flex:1;padding:8px;border:none;border-radius:8px;background:rgba(255,255,255,.15);color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .2s}
     .tab.active{background:rgba(255,255,255,.95);color:var(--primary)}
 
+    .progress-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+    .progress-bar{flex:1;height:5px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:#fff;border-radius:3px;transition:width .3s ease;width:0%}
+    .progress-label{font-size:.7rem;opacity:.9;white-space:nowrap;min-width:48px;text-align:right}
+
     .instruction{margin:14px 16px 6px;padding:12px 14px;background:var(--primary-light);border-left:3px solid var(--primary);border-radius:10px;font-size:.84rem;line-height:1.55;color:var(--text)}
 
-    .phase{display:none;padding:6px 12px 140px}
+    .phase{display:none;padding:6px 12px 100px}
     .phase.active{display:block}
     .phase-title{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 4px 6px;text-align:center}
 
-    .card-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+    /* ── PICK PHASE: tap cards ── */
+    .pick-pool{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+    .pick-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;box-shadow:0 1px 2px rgb(0 0 0/.04);transition:border-color .15s,background .15s,opacity .2s,transform .2s;-webkit-tap-highlight-color:transparent}
+    .pick-card:active{transform:scale(.98)}
+    .pick-card.picked{opacity:0;height:0;padding:0;margin:0;border:0;overflow:hidden;pointer-events:none}
+    .pick-name{font-size:.9rem;font-weight:600;line-height:1.3}
+    .pick-desc{font-size:.76rem;color:var(--muted);line-height:1.3;margin-top:2px}
 
-    .v-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgb(0 0 0/.04);transition:border-color .15s,background .15s}
-
-    .v-rank{min-width:26px;height:26px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--muted);flex-shrink:0;transition:background .2s,color .2s}
-    .v-card:nth-child(-n+3) .v-rank{background:var(--primary);color:#fff}
-    .v-card:nth-last-child(-n+3) .v-rank{background:#fecaca;color:#991b1b}
-
-    .v-body{flex:1;min-width:0}
-    .v-name{font-size:.88rem;font-weight:600;line-height:1.3}
-    .v-desc{font-size:.74rem;color:var(--muted);line-height:1.3;margin-top:1px}
-
-    .v-btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
-    .v-btn{width:32px;height:28px;border:1.5px solid var(--border);border-radius:7px;background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--muted);transition:background .12s,border-color .12s,color .12s;-webkit-tap-highlight-color:transparent}
-    .v-btn:active{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
-    .v-btn.disabled{opacity:.2;pointer-events:none}
+    /* ── REVIEW PHASE: reorder ── */
+    .review-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+    .rev-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:10px 8px 10px 14px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgb(0 0 0/.04);transition:border-color .15s,box-shadow .15s}
+    .rev-card.dragging{opacity:.35;border-style:dashed}
+    .rev-card.over{border-color:var(--primary);background:var(--primary-light)}
+    .rev-rank{min-width:26px;height:26px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--muted);flex-shrink:0}
+    .rev-body{flex:1;min-width:0}
+    .rev-name{font-size:.88rem;font-weight:600;line-height:1.3}
+    .rev-desc{font-size:.74rem;color:var(--muted);line-height:1.3;margin-top:1px}
+    .drag-handle{width:36px;height:40px;display:flex;align-items:center;justify-content:center;cursor:grab;color:#94a3b8;font-size:1.2rem;flex-shrink:0;touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;border-radius:8px;transition:background .15s}
+    .drag-handle:active{cursor:grabbing;background:var(--primary-light);color:var(--primary)}
 
     .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 16px;z-index:15;box-shadow:0 -2px 10px rgb(0 0 0/.06);display:flex;flex-direction:column;gap:6px}
     .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .submit-btn:disabled{opacity:.4;cursor:not-allowed}
     .hint-text{text-align:center;font-size:.74rem;color:var(--muted)}
 
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -70,25 +79,31 @@
     <button class="tab active" id="tabA" onclick="switchPhase('A')">Список А: Цели</button>
     <button class="tab" id="tabB" onclick="switchPhase('B')">Список Б: Средства</button>
   </div>
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressLabel">0 / 18</span>
+  </div>
 </div>
 
-<div class="instruction">
-  Расположите карточки по значимости: <strong>самая важная сверху</strong>. Используйте стрелки для перемещения. Топ-3 подсвечены фиолетовым, низ-3 — красным.
+<div class="instruction" id="instrText">
+  Нажимайте на карточки <strong>по порядку значимости</strong>: сначала самую важную, потом вторую по важности, и так далее. Карточки будут исчезать из списка.
 </div>
 
 <div class="phase active" id="phaseA">
-  <div class="phase-title">Ценности-цели: что для вас важнее всего?</div>
-  <ul class="card-list" id="listA"></ul>
+  <div class="phase-title" id="phaseTitleA">Выберите самую важную ценность-цель</div>
+  <ul class="pick-pool" id="pickA"></ul>
+  <ul class="review-list" id="reviewA" style="display:none"></ul>
 </div>
 
 <div class="phase" id="phaseB">
-  <div class="phase-title">Ценности-средства: как вы предпочитаете действовать?</div>
-  <ul class="card-list" id="listB"></ul>
+  <div class="phase-title" id="phaseTitleB">Выберите самое важное средство действия</div>
+  <ul class="pick-pool" id="pickB"></ul>
+  <ul class="review-list" id="reviewB" style="display:none"></ul>
 </div>
 
 <div class="bottom-bar">
-  <div class="hint-text" id="hintText">Расположите карточки стрелками, затем перейдите к списку Б</div>
-  <button class="submit-btn" id="submitBtn" onclick="submitAll()">Завершить тест</button>
+  <div class="hint-text" id="hintText">Нажмите на самую важную ценность</div>
+  <button class="submit-btn" id="submitBtn" onclick="submitAll()" disabled>Завершить тест</button>
 </div>
 
 <div class="overlay" id="overlay">
@@ -125,7 +140,6 @@ var TERMINAL = [
   ["Творчество","возможность творческой деятельности"],
   ["Уверенность в себе","внутренняя гармония, свобода от противоречий"]
 ];
-
 var INSTRUMENTAL = [
   ["Аккуратность","чистоплотность, порядок в делах"],
   ["Воспитанность","хорошие манеры"],
@@ -147,143 +161,261 @@ var INSTRUMENTAL = [
   ["Чуткость","заботливость"]
 ];
 
-var currentPhase = 'A';
-var visitedB = false;
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
 
-function shuffle(arr) {
-  for (var i = arr.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-  }
-  return arr;
-}
+var state = {
+  A: {items: TERMINAL, pool: shuffle(TERMINAL.map(function(_,i){return i})), ranked: [], mode: 'pick'},
+  B: {items: INSTRUMENTAL, pool: shuffle(INSTRUMENTAL.map(function(_,i){return i})), ranked: [], mode: 'pick'}
+};
+var cur = 'A';
+var doneA = false, doneB = false;
 
-var orderA = shuffle(TERMINAL.map(function(_,i){return i}));
-var orderB = shuffle(INSTRUMENTAL.map(function(_,i){return i}));
-
-function renderList(listId, items, order) {
-  var ul = document.getElementById(listId);
+function renderPick(key) {
+  var s = state[key];
+  var ul = document.getElementById('pick' + key);
   ul.innerHTML = '';
-  var len = order.length;
-  order.forEach(function(origIdx, pos) {
+  s.pool.forEach(function(idx) {
     var li = document.createElement('li');
-    li.className = 'v-card';
-    li.setAttribute('data-idx', origIdx);
-    var isFirst = pos === 0;
-    var isLast = pos === len - 1;
-    li.innerHTML =
-      '<span class="v-rank">' + (pos + 1) + '</span>' +
-      '<div class="v-body">' +
-        '<div class="v-name">' + items[origIdx][0] + '</div>' +
-        (items[origIdx][1] ? '<div class="v-desc">' + items[origIdx][1] + '</div>' : '') +
-      '</div>' +
-      '<div class="v-btns">' +
-        '<button class="v-btn' + (isFirst ? ' disabled' : '') + '" onclick="moveUp(this)" aria-label="Вверх">&#9650;</button>' +
-        '<button class="v-btn' + (isLast ? ' disabled' : '') + '" onclick="moveDown(this)" aria-label="Вниз">&#9660;</button>' +
-      '</div>';
+    li.className = 'pick-card';
+    li.setAttribute('data-idx', idx);
+    li.onclick = function(){ pickCard(key, idx); };
+    li.innerHTML = '<div class="pick-name">' + s.items[idx][0] + '</div>' +
+      (s.items[idx][1] ? '<div class="pick-desc">' + s.items[idx][1] + '</div>' : '');
     ul.appendChild(li);
   });
 }
 
-function moveUp(btn) {
-  var li = btn.closest('.v-card');
-  var ul = li.parentNode;
-  var prev = li.previousElementSibling;
-  if (prev) {
-    ul.insertBefore(li, prev);
-    refreshList(ul);
-    li.scrollIntoView({block:'nearest',behavior:'smooth'});
-  }
+function pickCard(key, idx) {
+  var s = state[key];
+  s.pool = s.pool.filter(function(i){ return i !== idx; });
+  s.ranked.push(idx);
+
+  // animate out
+  var card = document.querySelector('#pick' + key + ' [data-idx="' + idx + '"]');
+  if (card) card.classList.add('picked');
+
+  setTimeout(function(){
+    renderPick(key);
+    updateProgress(key);
+
+    if (s.pool.length === 0) {
+      s.mode = 'review';
+      showReview(key);
+    }
+  }, 200);
 }
 
-function moveDown(btn) {
-  var li = btn.closest('.v-card');
-  var ul = li.parentNode;
-  var next = li.nextElementSibling;
-  if (next) {
-    ul.insertBefore(next, li);
-    refreshList(ul);
-    li.scrollIntoView({block:'nearest',behavior:'smooth'});
-  }
+function showReview(key) {
+  var s = state[key];
+  document.getElementById('pick' + key).style.display = 'none';
+  document.getElementById('review' + key).style.display = '';
+  var title = document.getElementById('phaseTitle' + key);
+  title.textContent = 'Проверьте порядок. Можно поправить перетаскиванием за ≡';
+  document.getElementById('instrText').innerHTML = 'Проверьте получившийся порядок. Если нужно поправить — перетаскивайте за иконку <strong>≡</strong> справа.';
+  renderReview(key);
+  if (key === 'A') doneA = true;
+  if (key === 'B') doneB = true;
+  updateBottom();
 }
 
-function refreshList(ul) {
-  var cards = ul.querySelectorAll('.v-card');
-  var len = cards.length;
-  cards.forEach(function(card, idx) {
-    card.querySelector('.v-rank').textContent = idx + 1;
-    var btns = card.querySelectorAll('.v-btn');
-    btns[0].classList.toggle('disabled', idx === 0);
-    btns[1].classList.toggle('disabled', idx === len - 1);
+function renderReview(key) {
+  var s = state[key];
+  var ul = document.getElementById('review' + key);
+  ul.innerHTML = '';
+  s.ranked.forEach(function(origIdx, pos) {
+    var li = document.createElement('li');
+    li.className = 'rev-card';
+    li.setAttribute('data-idx', origIdx);
+    li.innerHTML =
+      '<span class="rev-rank">' + (pos+1) + '</span>' +
+      '<div class="rev-body"><div class="rev-name">' + s.items[origIdx][0] + '</div>' +
+      (s.items[origIdx][1] ? '<div class="rev-desc">' + s.items[origIdx][1] + '</div>' : '') +
+      '</div>' +
+      '<div class="drag-handle" draggable="true">&#x2630;</div>';
+    ul.appendChild(li);
+  });
+  addHandleDrag(ul, key);
+}
+
+// drag only from handle
+function addHandleDrag(ul, key) {
+  var dragEl = null;
+  ul.querySelectorAll('.drag-handle').forEach(function(handle) {
+    handle.addEventListener('dragstart', function(e) {
+      dragEl = handle.closest('.rev-card');
+      dragEl.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+    });
+    handle.addEventListener('dragend', function() {
+      if (dragEl) dragEl.classList.remove('dragging');
+      ul.querySelectorAll('.rev-card').forEach(function(c){c.classList.remove('over')});
+      syncRanked(ul, key);
+      dragEl = null;
+    });
+  });
+  // drop targets are the cards themselves
+  ul.querySelectorAll('.rev-card').forEach(function(card) {
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (card !== dragEl) card.classList.add('over');
+    });
+    card.addEventListener('dragleave', function() { card.classList.remove('over'); });
+    card.addEventListener('drop', function(e) {
+      e.preventDefault();
+      card.classList.remove('over');
+      if (dragEl && dragEl !== card) {
+        var all = Array.from(ul.children);
+        var fi = all.indexOf(dragEl), ti = all.indexOf(card);
+        if (fi < ti) ul.insertBefore(dragEl, card.nextSibling);
+        else ul.insertBefore(dragEl, card);
+        syncRanked(ul, key);
+      }
+    });
+  });
+
+  // touch drag from handle only
+  var touchDrag = null;
+  var touchClone = null;
+  var touchStartY = 0;
+  ul.querySelectorAll('.drag-handle').forEach(function(handle) {
+    handle.addEventListener('touchstart', function(e) {
+      touchDrag = handle.closest('.rev-card');
+      touchDrag.classList.add('dragging');
+      touchStartY = e.touches[0].clientY;
+      // create floating clone
+      touchClone = touchDrag.cloneNode(true);
+      touchClone.style.cssText = 'position:fixed;left:12px;right:12px;z-index:50;opacity:.85;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.18);border-color:var(--primary);';
+      touchClone.style.top = touchDrag.getBoundingClientRect().top + 'px';
+      touchClone.style.width = touchDrag.offsetWidth + 'px';
+      document.body.appendChild(touchClone);
+    }, {passive: true});
+
+    handle.addEventListener('touchmove', function(e) {
+      if (!touchDrag) return;
+      e.preventDefault();
+      var y = e.touches[0].clientY;
+      touchClone.style.top = (y - 30) + 'px';
+      // find target
+      ul.querySelectorAll('.rev-card').forEach(function(c){c.classList.remove('over')});
+      var el = document.elementFromPoint(e.touches[0].clientX, y);
+      if (el) {
+        var target = el.closest('.rev-card');
+        if (target && target !== touchDrag && target.parentNode === ul) {
+          target.classList.add('over');
+        }
+      }
+    }, {passive: false});
+
+    handle.addEventListener('touchend', function(e) {
+      if (!touchDrag) return;
+      if (touchClone) { document.body.removeChild(touchClone); touchClone = null; }
+      var y = e.changedTouches[0].clientY;
+      var el = document.elementFromPoint(e.changedTouches[0].clientX, y);
+      if (el) {
+        var target = el.closest('.rev-card');
+        if (target && target !== touchDrag && target.parentNode === ul) {
+          var all = Array.from(ul.children);
+          var fi = all.indexOf(touchDrag), ti = all.indexOf(target);
+          if (fi < ti) ul.insertBefore(touchDrag, target.nextSibling);
+          else ul.insertBefore(touchDrag, target);
+        }
+      }
+      touchDrag.classList.remove('dragging');
+      ul.querySelectorAll('.rev-card').forEach(function(c){c.classList.remove('over')});
+      syncRanked(ul, key);
+      touchDrag = null;
+    });
   });
 }
 
-function switchPhase(phase) {
-  currentPhase = phase;
-  document.getElementById('phaseA').classList.toggle('active', phase === 'A');
-  document.getElementById('phaseB').classList.toggle('active', phase === 'B');
-  document.getElementById('tabA').classList.toggle('active', phase === 'A');
-  document.getElementById('tabB').classList.toggle('active', phase === 'B');
-  if (phase === 'B') {
-    visitedB = true;
-    document.getElementById('hintText').textContent = 'Расположите карточки и нажмите "Завершить тест"';
+function syncRanked(ul, key) {
+  var s = state[key];
+  s.ranked = Array.from(ul.children).map(function(li){ return parseInt(li.getAttribute('data-idx')); });
+  ul.querySelectorAll('.rev-rank').forEach(function(r, i){ r.textContent = i + 1; });
+}
+
+function updateProgress(key) {
+  var s = state[key];
+  var total = s.items.length;
+  var done = s.ranked.length;
+  var remaining = s.pool.length;
+  document.getElementById('progressFill').style.width = (done/total*100) + '%';
+  document.getElementById('progressLabel').textContent = done + ' / ' + total;
+
+  var title = document.getElementById('phaseTitle' + key);
+  if (remaining > 0) {
+    var ordinal = done + 1;
+    if (ordinal === 1) title.textContent = key === 'A' ? 'Выберите самую важную ценность-цель' : 'Выберите самое важное средство действия';
+    else title.textContent = 'Выберите ' + ordinal + '-ю по значимости';
+    document.getElementById('hintText').textContent = 'Осталось: ' + remaining + ' из ' + total;
+  }
+}
+
+function switchPhase(p) {
+  cur = p;
+  document.getElementById('phaseA').classList.toggle('active', p === 'A');
+  document.getElementById('phaseB').classList.toggle('active', p === 'B');
+  document.getElementById('tabA').classList.toggle('active', p === 'A');
+  document.getElementById('tabB').classList.toggle('active', p === 'B');
+  var s = state[p];
+  if (s.mode === 'pick') {
+    document.getElementById('instrText').innerHTML = 'Нажимайте на карточки <strong>по порядку значимости</strong>: сначала самую важную, потом вторую по важности, и так далее.';
+    updateProgress(p);
   } else {
-    document.getElementById('hintText').textContent = visitedB
-      ? 'Можете подправить порядок, затем "Завершить тест"'
-      : 'Расположите карточки стрелками, затем перейдите к списку Б';
+    document.getElementById('instrText').innerHTML = 'Проверьте получившийся порядок. Если нужно поправить — перетаскивайте за иконку <strong>≡</strong> справа.';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressLabel').textContent = s.items.length + ' / ' + s.items.length;
   }
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  updateBottom();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function getOrder(listId) {
-  return Array.from(document.getElementById(listId).children).map(function(li) {
-    return parseInt(li.getAttribute('data-idx'));
-  });
+function updateBottom() {
+  var btn = document.getElementById('submitBtn');
+  var hint = document.getElementById('hintText');
+  if (doneA && doneB) {
+    btn.disabled = false;
+    hint.textContent = 'Оба списка готовы — можно завершить';
+  } else if (doneA && !doneB) {
+    hint.textContent = 'Список А готов. Перейдите к списку Б';
+  } else if (state.A.mode === 'pick' && state.A.pool.length > 0) {
+    hint.textContent = 'Осталось: ' + state.A.pool.length + ' из 18';
+  }
 }
+
+function getOrder(key) { return state[key].ranked; }
 
 function buildExport() {
-  var today = new Date().toISOString().slice(0, 10);
-  var oA = getOrder('listA');
-  var oB = getOrder('listB');
-  var pA = oA.map(function(origIdx, pos) { return (pos+1) + ':' + (origIdx+1); }).join(' ');
-  var pB = oB.map(function(origIdx, pos) { return (pos+1) + ':' + (origIdx+1); }).join(' ');
+  var today = new Date().toISOString().slice(0,10);
+  var pA = getOrder('A').map(function(idx,pos){return (pos+1)+':'+(idx+1)}).join(' ');
+  var pB = getOrder('B').map(function(idx,pos){return (pos+1)+':'+(idx+1)}).join(' ');
   return 'ТЕСТ: rokeach-values\nДАТА: ' + today + '\nА: ' + pA + '\nБ: ' + pB;
 }
 
 function submitAll() {
-  if (!visitedB) { switchPhase('B'); return; }
+  if (!doneA) { switchPhase('A'); return; }
+  if (!doneB) { switchPhase('B'); return; }
   document.getElementById('exportBox').textContent = buildExport();
   document.getElementById('overlay').classList.add('open');
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-document.getElementById('copyBtn').addEventListener('click', function() {
+document.getElementById('copyBtn').addEventListener('click', function(){
   var text = document.getElementById('exportBox').textContent;
   var btn = document.getElementById('copyBtn');
-  function done() {
-    btn.textContent = 'Скопировано \u2713';
-    btn.classList.add('copied');
-    setTimeout(function(){btn.textContent='Скопировать';btn.classList.remove('copied')}, 3500);
-  }
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(done).catch(fb);
-  } else { fb(); }
-  function fb() {
-    var el = document.getElementById('exportBox');
-    var r = document.createRange(); r.selectNodeContents(el);
-    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-    try {document.execCommand('copy'); done()} catch(e){}
-    s.removeAllRanges();
-  }
+  function done(){btn.textContent='Скопировано \u2713';btn.classList.add('copied');setTimeout(function(){btn.textContent='Скопировать';btn.classList.remove('copied')},3500)}
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(done).catch(fb)}else{fb()}
+  function fb(){var el=document.getElementById('exportBox');var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done()}catch(e){}s.removeAllRanges()}
 });
 
-document.getElementById('overlay').addEventListener('click', function(e) {
-  if (e.target === document.getElementById('overlay'))
-    document.getElementById('overlay').classList.remove('open');
+document.getElementById('overlay').addEventListener('click', function(e){
+  if(e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open');
 });
 
-renderList('listA', TERMINAL, orderA);
-renderList('listB', INSTRUMENTAL, orderB);
+renderPick('A');
+renderPick('B');
+updateProgress('A');
 </script>
 </body>
 </html>

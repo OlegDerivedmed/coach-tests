@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест Рокича — Ценностные ориентации</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--primary:#7c3aed;--primary-light:#f3f0ff;--primary-dark:#5b21b6;--text:#1e293b;--muted:#64748b;--bg:#f8f9fa;--card:#fff;--border:#e2e8f0;--success:#16a34a;--radius:14px;--grab:#94a3b8}
+    body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+    .header{background:var(--primary);color:#fff;padding:20px 16px 14px;position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgb(124 58 237/.3)}
+    .header-top{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+    .header h1{font-size:1rem;font-weight:700;line-height:1.3}
+    .header-meta{font-size:.75rem;opacity:.75;white-space:nowrap}
+    .tabs{display:flex;gap:6px;margin-top:10px}
+    .tab{flex:1;padding:8px;border:none;border-radius:8px;background:rgba(255,255,255,.15);color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .2s}
+    .tab.active{background:rgba(255,255,255,.95);color:var(--primary)}
+    .instruction{margin:16px 16px 8px;padding:14px 16px;background:var(--primary-light);border-left:3px solid var(--primary);border-radius:10px;font-size:.85rem;line-height:1.6;color:var(--text)}
+    .phase{display:none;padding:8px 16px 140px}
+    .phase.active{display:block}
+    .phase-title{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px;text-align:center}
+    .sortable{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;min-height:50px}
+    .sortable li{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:grab;box-shadow:0 1px 3px rgb(0 0 0/.06);transition:border-color .15s,box-shadow .15s;touch-action:none;-webkit-touch-callout:none}
+    .sortable li:active{cursor:grabbing;box-shadow:0 4px 16px rgb(0 0 0/.12);border-color:var(--primary);z-index:5}
+    .sortable li.dragging{opacity:.4;border-style:dashed}
+    .sortable li.over{border-color:var(--primary);background:var(--primary-light)}
+    .rank{min-width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:var(--muted);flex-shrink:0}
+    .val-name{font-size:.9rem;font-weight:600;line-height:1.3}
+    .val-desc{font-size:.78rem;color:var(--muted);line-height:1.4;margin-top:2px}
+    .grip{margin-left:auto;color:var(--grab);font-size:1.1rem;flex-shrink:0}
+    .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px;z-index:15;box-shadow:0 -2px 10px rgb(0 0 0/.06);display:flex;flex-direction:column;gap:8px}
+    .submit-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .submit-btn:disabled{opacity:.4;cursor:not-allowed}
+    .hint-text{text-align:center;font-size:.75rem;color:var(--muted)}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
+    .overlay.open{opacity:1;pointer-events:auto}
+    .sheet{background:#fff;width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:20px 20px 32px;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .35s ease}
+    .overlay.open .sheet{transform:translateY(0)}
+    .handle{width:36px;height:4px;background:#cbd5e1;border-radius:2px;margin:0 auto 16px}
+    .sheet-icon{font-size:2.5rem;text-align:center;margin-bottom:8px}
+    .sheet-title{font-size:1.15rem;font-weight:700;text-align:center;margin-bottom:6px}
+    .sheet-desc{font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:20px;line-height:1.5}
+    .export-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+    .export-box{background:#f1f5f9;border:1px solid var(--border);border-radius:10px;padding:14px;font-family:'SF Mono','Consolas',monospace;font-size:.78rem;line-height:1.7;white-space:pre-wrap;word-break:break-all;margin-bottom:14px;max-height:200px;overflow-y:auto}
+    .copy-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--success);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+    .copy-btn.copied{background:#166534}
+    .copy-hint{text-align:center;font-size:.75rem;color:var(--muted);margin-top:10px;line-height:1.5}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Ценностные ориентации Рокича</h1>
+    <span class="header-meta">36 карточек</span>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="tabA" onclick="switchPhase('A')">Список А: Цели</button>
+    <button class="tab" id="tabB" onclick="switchPhase('B')">Список Б: Средства</button>
+  </div>
+</div>
+
+<div class="instruction">
+  Расположите карточки по порядку значимости: <strong>самая важная сверху</strong>, наименее важная — внизу. Перетаскивайте карточки пальцем или мышью.
+</div>
+
+<div class="phase active" id="phaseA">
+  <div class="phase-title">Ценности-цели: что для вас важнее всего?</div>
+  <ul class="sortable" id="listA"></ul>
+</div>
+
+<div class="phase" id="phaseB">
+  <div class="phase-title">Ценности-средства: как вы предпочитаете действовать?</div>
+  <ul class="sortable" id="listB"></ul>
+</div>
+
+<div class="bottom-bar">
+  <div class="hint-text" id="hintText">Расположите карточки и перейдите к списку Б</div>
+  <button class="submit-btn" id="submitBtn" onclick="submitAll()">Завершить тест</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-icon">&#10004;&#65039;</div>
+    <div class="sheet-title">Тест пройден!</div>
+    <div class="sheet-desc">Скопируйте текст ниже и отправьте коучу в Telegram, WhatsApp или по email.</div>
+    <div class="export-label">Ваши ответы для коуча</div>
+    <div class="export-box" id="exportBox"></div>
+    <button class="copy-btn" id="copyBtn">Скопировать</button>
+    <div class="copy-hint">После копирования отправьте этот текст коучу.</div>
+  </div>
+</div>
+
+<script>
+var TERMINAL = [
+  ["Активная деятельная жизнь","полнота и эмоциональная насыщенность жизни"],
+  ["Жизненная мудрость","зрелость суждений и здравый смысл"],
+  ["Здоровье","физическое и психическое"],
+  ["Интересная работа",""],
+  ["Красота природы и искусства","переживание прекрасного"],
+  ["Любовь","духовная и физическая близость с любимым человеком"],
+  ["Материально обеспеченная жизнь","отсутствие материальных затруднений"],
+  ["Наличие хороших и верных друзей",""],
+  ["Общественное признание","уважение окружающих, коллектива"],
+  ["Познание","расширение образования, кругозора, интеллектуальное развитие"],
+  ["Продуктивная жизнь","максимально полное использование своих возможностей"],
+  ["Развитие","работа над собой, физическое и духовное совершенствование"],
+  ["Развлечения","приятное, необременительное времяпрепровождение"],
+  ["Свобода","самостоятельность, независимость в суждениях и поступках"],
+  ["Счастливая семейная жизнь",""],
+  ["Счастье других","благосостояние и совершенствование других людей"],
+  ["Творчество","возможность творческой деятельности"],
+  ["Уверенность в себе","внутренняя гармония, свобода от внутренних противоречий"]
+];
+
+var INSTRUMENTAL = [
+  ["Аккуратность","чистоплотность, порядок в делах"],
+  ["Воспитанность","хорошие манеры"],
+  ["Высокие запросы","высокие требования к жизни и притязания"],
+  ["Жизнерадостность","чувство юмора"],
+  ["Исполнительность","дисциплинированность"],
+  ["Независимость","способность действовать самостоятельно, решительно"],
+  ["Непримиримость к недостаткам","в себе и других"],
+  ["Образованность","широта знаний, высокая общая культура"],
+  ["Ответственность","чувство долга, умение держать слово"],
+  ["Рационализм","умение здраво и логично мыслить"],
+  ["Самоконтроль","сдержанность, самодисциплина"],
+  ["Смелость в отстаивании мнения",""],
+  ["Твёрдая воля","умение настоять на своём"],
+  ["Терпимость","умение прощать ошибки и заблуждения других"],
+  ["Широта взглядов","умение понять чужую точку зрения"],
+  ["Честность","правдивость, искренность"],
+  ["Эффективность в делах","трудолюбие, продуктивность"],
+  ["Чуткость","заботливость"]
+];
+
+var currentPhase = 'A';
+var visitedB = false;
+var dragEl = null;
+var dragList = null;
+
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+
+var termOrder = shuffle(TERMINAL.map(function(v,i){return i}));
+var instOrder = shuffle(INSTRUMENTAL.map(function(v,i){return i}));
+
+function renderList(listId, items, order) {
+  var ul = document.getElementById(listId);
+  ul.innerHTML = '';
+  order.forEach(function(origIdx, pos) {
+    var li = document.createElement('li');
+    li.setAttribute('data-idx', origIdx);
+    li.draggable = true;
+    li.innerHTML =
+      '<span class="rank">' + (pos + 1) + '</span>' +
+      '<div><div class="val-name">' + items[origIdx][0] + '</div>' +
+      (items[origIdx][1] ? '<div class="val-desc">' + items[origIdx][1] + '</div>' : '') +
+      '</div><span class="grip">&#x2630;</span>';
+    ul.appendChild(li);
+  });
+  addDragListeners(ul);
+}
+
+function addDragListeners(ul) {
+  var items = ul.querySelectorAll('li');
+  items.forEach(function(li) {
+    li.addEventListener('dragstart', function(e) {
+      dragEl = li;
+      dragList = ul;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    li.addEventListener('dragend', function() {
+      li.classList.remove('dragging');
+      ul.querySelectorAll('li').forEach(function(el){el.classList.remove('over')});
+      updateRanks(ul);
+      dragEl = null;
+    });
+    li.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (li !== dragEl && dragList === ul) {
+        li.classList.add('over');
+      }
+    });
+    li.addEventListener('dragleave', function() {
+      li.classList.remove('over');
+    });
+    li.addEventListener('drop', function(e) {
+      e.preventDefault();
+      li.classList.remove('over');
+      if (dragEl && dragEl !== li && dragList === ul) {
+        var allLi = Array.from(ul.children);
+        var fromIdx = allLi.indexOf(dragEl);
+        var toIdx = allLi.indexOf(li);
+        if (fromIdx < toIdx) {
+          ul.insertBefore(dragEl, li.nextSibling);
+        } else {
+          ul.insertBefore(dragEl, li);
+        }
+        updateRanks(ul);
+      }
+    });
+
+    // Touch support
+    var touchY = 0;
+    var touchClone = null;
+    li.addEventListener('touchstart', function(e) {
+      dragEl = li;
+      dragList = ul;
+      touchY = e.touches[0].clientY;
+      li.classList.add('dragging');
+    }, {passive: true});
+    li.addEventListener('touchmove', function(e) {
+      if (!dragEl) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      var target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (target) {
+        var targetLi = target.closest('li');
+        ul.querySelectorAll('li').forEach(function(el){el.classList.remove('over')});
+        if (targetLi && targetLi !== dragEl && targetLi.parentNode === ul) {
+          targetLi.classList.add('over');
+        }
+      }
+    }, {passive: false});
+    li.addEventListener('touchend', function(e) {
+      if (!dragEl) return;
+      var touch = e.changedTouches[0];
+      var target = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (target) {
+        var targetLi = target.closest('li');
+        if (targetLi && targetLi !== dragEl && targetLi.parentNode === ul) {
+          var allLi = Array.from(ul.children);
+          var fromIdx = allLi.indexOf(dragEl);
+          var toIdx = allLi.indexOf(targetLi);
+          if (fromIdx < toIdx) {
+            ul.insertBefore(dragEl, targetLi.nextSibling);
+          } else {
+            ul.insertBefore(dragEl, targetLi);
+          }
+        }
+      }
+      dragEl.classList.remove('dragging');
+      ul.querySelectorAll('li').forEach(function(el){el.classList.remove('over')});
+      updateRanks(ul);
+      dragEl = null;
+    });
+  });
+}
+
+function updateRanks(ul) {
+  ul.querySelectorAll('li').forEach(function(li, idx) {
+    li.querySelector('.rank').textContent = idx + 1;
+  });
+}
+
+function switchPhase(phase) {
+  currentPhase = phase;
+  document.getElementById('phaseA').classList.toggle('active', phase === 'A');
+  document.getElementById('phaseB').classList.toggle('active', phase === 'B');
+  document.getElementById('tabA').classList.toggle('active', phase === 'A');
+  document.getElementById('tabB').classList.toggle('active', phase === 'B');
+  if (phase === 'B') {
+    visitedB = true;
+    document.getElementById('hintText').textContent = 'Расположите карточки и нажмите "Завершить тест"';
+  } else {
+    document.getElementById('hintText').textContent = visitedB
+      ? 'Можете поправить порядок, затем нажмите "Завершить тест"'
+      : 'Расположите карточки и перейдите к списку Б';
+  }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function getOrder(listId) {
+  return Array.from(document.getElementById(listId).children).map(function(li) {
+    return parseInt(li.getAttribute('data-idx'));
+  });
+}
+
+function buildExport() {
+  var today = new Date().toISOString().slice(0, 10);
+  var orderA = getOrder('listA');
+  var orderB = getOrder('listB');
+  var pairsA = orderA.map(function(origIdx, pos) {
+    return (pos + 1) + ':' + (origIdx + 1);
+  }).join(' ');
+  var pairsB = orderB.map(function(origIdx, pos) {
+    return (pos + 1) + ':' + (origIdx + 1);
+  }).join(' ');
+  return 'ТЕСТ: rokeach-values\nДАТА: ' + today + '\nА: ' + pairsA + '\nБ: ' + pairsB;
+}
+
+function submitAll() {
+  if (!visitedB) {
+    switchPhase('B');
+    return;
+  }
+  document.getElementById('exportBox').textContent = buildExport();
+  document.getElementById('overlay').classList.add('open');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  var text = document.getElementById('exportBox').textContent;
+  var btn = document.getElementById('copyBtn');
+  function markCopied() {
+    btn.textContent = 'Скопировано \u2713';
+    btn.classList.add('copied');
+    setTimeout(function(){btn.textContent='Скопировать';btn.classList.remove('copied')}, 3500);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallback);
+  } else { fallback(); }
+  function fallback() {
+    var el = document.getElementById('exportBox');
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    try {document.execCommand('copy'); markCopied()} catch(e){}
+    sel.removeAllRanges();
+  }
+});
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+  }
+});
+
+renderList('listA', TERMINAL, termOrder);
+renderList('listB', INSTRUMENTAL, instOrder);
+</script>
+</body>
+</html>

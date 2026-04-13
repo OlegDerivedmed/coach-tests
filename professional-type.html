@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профессиональные склонности — Йовайши–Резапкина</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #0284c7;
+      --primary-light: #e0f2fe;
+      --primary-dark: #0369a1;
+      --text: #1e293b;
+      --muted: #64748b;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 18px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgb(2 132 199 / 0.35);
+    }
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+    .header h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .header-meta { font-size: 0.75rem; opacity: 0.75; white-space: nowrap; }
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: white; border-radius: 3px; transition: width 0.25s ease; width: 0%; }
+    .progress-label { font-size: 0.7rem; opacity: 0.9; white-space: nowrap; min-width: 60px; text-align: right; }
+
+    /* ── INSTRUCTION ── */
+    .instruction {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    .instruction p {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .instruction .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 640px;
+    }
+
+    /* ── QUESTIONS ── */
+    .questions-wrap {
+      padding: 16px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .question-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .question-card.answered { border-color: var(--primary); }
+
+    .question-text {
+      padding: 14px 16px 10px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .question-num {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 0.855rem;
+      font-weight: 400;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.5;
+      transition: background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+    }
+    .option-btn:hover { background: #f1f5f9; }
+    .option-btn.selected {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 500;
+    }
+    .option-btn.selected .opt-letter {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .opt-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: var(--muted);
+      border: 1.5px solid #cbd5e1;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 20;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    }
+    .remaining-note { font-size: 0.8rem; color: var(--muted); }
+    .submit-btn {
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+    .submit-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      background: var(--card);
+      width: 100%;
+      max-height: 85vh;
+      border-radius: 20px 20px 0 0;
+      padding: 12px 20px 32px;
+      overflow-y: auto;
+      transform: translateY(40px);
+      transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+
+    .handle {
+      width: 36px; height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 0 auto 20px;
+    }
+    .sheet-icon { text-align: center; font-size: 2rem; margin-bottom: 8px; }
+    .sheet-title { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .sheet-desc {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .export-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .export-box {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .copy-btn {
+      display: block;
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 10px;
+    }
+    .copy-btn:hover { background: var(--primary-dark); }
+    .copy-btn.copied { background: var(--success); }
+
+    .copy-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Профессиональные склонности</h1>
+    <span class="header-meta">Йовайши · Резапкина</span>
+  </div>
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressLabel">0 из 24</span>
+  </div>
+</div>
+
+<div class="instruction">
+  <p>Вашему вниманию предлагается 24 вопроса, направленные на выявление склонностей к определённому виду занятий. Для каждого вопроса выберите <strong>один</strong> из трёх вариантов — <strong>а</strong>, <strong>б</strong> или <strong>в</strong>.</p>
+  <p class="note">Нет правильных и неправильных ответов. Отвечайте быстро — доверяйтесь первому впечатлению.</p>
+</div>
+
+<div class="questions-wrap" id="questionsWrap"></div>
+
+<div class="bottom-bar">
+  <div class="remaining-note" id="remainingNote">Ответьте на все 24 вопроса</div>
+  <button class="submit-btn" id="submitBtn" disabled onclick="openResult()">Готово</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-icon">✅</div>
+    <div class="sheet-title">Тест пройден!</div>
+    <div class="sheet-desc">Скопируйте текст ниже и отправьте его своему коучу — в Telegram, WhatsApp или по email.</div>
+    <div class="export-label">Ваши ответы для коуча</div>
+    <div class="export-box" id="exportBox"></div>
+    <button class="copy-btn" id="copyBtn">Скопировать</button>
+    <div class="copy-hint">После копирования отправьте этот текст коучу.<br>Можно сделать скриншот этого экрана.</div>
+  </div>
+</div>
+
+<script>
+// ── QUESTIONS ─────────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  {
+    text: 'Мне хотелось бы в своей профессиональной деятельности',
+    a: 'общаться с самыми разными людьми',
+    b: 'снимать фильмы, писать книги, рисовать, выступать на сцене и т.д.',
+    c: 'заниматься расчётами; вести документацию'
+  },
+  {
+    text: 'В книге или кинофильме меня больше всего привлекает',
+    a: 'возможность следить за ходом мыслей автора',
+    b: 'художественная форма, мастерство писателя или режиссёра',
+    c: 'сюжет, действия героев'
+  },
+  {
+    text: 'Меня больше обрадует Нобелевская премия',
+    a: 'за общественную деятельность',
+    b: 'в области наук',
+    c: 'в области искусства'
+  },
+  {
+    text: 'Я скорее соглашусь стать',
+    a: 'главным механиком',
+    b: 'начальником экспедиции',
+    c: 'главным бухгалтером'
+  },
+  {
+    text: 'Будущее людей определяют',
+    a: 'взаимопонимание между людьми',
+    b: 'научные открытия',
+    c: 'развитие производства'
+  },
+  {
+    text: 'Если я стану руководителем, то в первую очередь займусь',
+    a: 'созданием дружного, сплочённого коллектива',
+    b: 'разработкой новых технологий обучения',
+    c: 'работой с документами'
+  },
+  {
+    text: 'На технической выставке меня больше привлечёт',
+    a: 'внутреннее устройство экспонатов',
+    b: 'их практическое применение',
+    c: 'внешний вид экспонатов (цвет, форма)'
+  },
+  {
+    text: 'В людях я ценю, прежде всего',
+    a: 'дружелюбие и отзывчивость',
+    b: 'смелость и выносливость',
+    c: 'обязательность и аккуратность'
+  },
+  {
+    text: 'В свободное время мне хотелось бы',
+    a: 'ставить различные опыты, эксперименты',
+    b: 'писать стихи, сочинять музыку или рисовать',
+    c: 'тренироваться'
+  },
+  {
+    text: 'В заграничных поездках меня скорее заинтересует',
+    a: 'возможность знакомства с историей и культурой другой страны',
+    b: 'экстремальный туризм (альпинизм, виндсерфинг, горные лыжи)',
+    c: 'деловое общение'
+  },
+  {
+    text: 'Мне интереснее беседовать о',
+    a: 'человеческих взаимоотношениях',
+    b: 'новой научной гипотезе',
+    c: 'технических характеристиках новой модели машины, компьютера'
+  },
+  {
+    text: 'Если бы в моей школе было всего три кружка, я бы выбрал',
+    a: 'технический',
+    b: 'музыкальный',
+    c: 'спортивный'
+  },
+  {
+    text: 'В школе следует обратить особое внимание на',
+    a: 'улучшение взаимопонимания между учителями и учениками',
+    b: 'поддержание здоровья учащихся, занятия спортом',
+    c: 'укрепление дисциплины'
+  },
+  {
+    text: 'Я с большим удовольствием смотрю',
+    a: 'научно-популярные фильмы',
+    b: 'программы о культуре и искусстве',
+    c: 'спортивные программы'
+  },
+  {
+    text: 'Мне хотелось бы работать',
+    a: 'с детьми или сверстниками',
+    b: 'с машинами, механизмами',
+    c: 'с объектами природы'
+  },
+  {
+    text: 'Школа в первую очередь должна',
+    a: 'учить общению с другими людьми',
+    b: 'давать знания',
+    c: 'обучать навыкам работы'
+  },
+  {
+    text: 'Главное в жизни',
+    a: 'иметь возможность заниматься творчеством',
+    b: 'вести здоровый образ жизни',
+    c: 'тщательно планировать свои дела'
+  },
+  {
+    text: 'Государство должно в первую очередь заботиться о',
+    a: 'защите интересов и прав граждан',
+    b: 'достижениях в области науки и техники',
+    c: 'материальном благополучии граждан'
+  },
+  {
+    text: 'Мне больше всего нравятся уроки',
+    a: 'труда',
+    b: 'физкультуры',
+    c: 'математики'
+  },
+  {
+    text: 'Мне интереснее было бы',
+    a: 'заниматься сбытом товаров',
+    b: 'изготавливать изделия',
+    c: 'планировать производство товаров'
+  },
+  {
+    text: 'Я предпочитаю читать статьи о',
+    a: 'выдающихся учёных и их открытиях',
+    b: 'интересных изобретениях',
+    c: 'жизни и творчестве писателей, художников, музыкантов'
+  },
+  {
+    text: 'Свободное время я люблю',
+    a: 'читать, думать, рассуждать',
+    b: 'что-нибудь мастерить, шить, ухаживать за животными, растениями',
+    c: 'ходить на выставки, концерты, в музеи'
+  },
+  {
+    text: 'Больший интерес у меня вызовет сообщение о',
+    a: 'научном открытии',
+    b: 'художественной выставке',
+    c: 'экономической ситуации'
+  },
+  {
+    text: 'Я предпочту работать',
+    a: 'в помещении, где много людей',
+    b: 'в необычных условиях',
+    c: 'в обычном кабинете'
+  }
+];
+
+const TOTAL = QUESTIONS.length; // 24
+const answers = new Array(TOTAL).fill(null); // null | 'а' | 'б' | 'в'
+const LABELS = { a: 'а', b: 'б', c: 'в' };
+
+// ── RENDER QUESTIONS ─────────────────────────────────────────────────────────
+(function init() {
+  var wrap = document.getElementById('questionsWrap');
+  QUESTIONS.forEach(function(q, i) {
+    var card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'card-' + i;
+
+    var qText = document.createElement('div');
+    qText.className = 'question-text';
+    qText.innerHTML = '<span class="question-num">' + (i + 1) + '</span>' + escHtml(q.text);
+    card.appendChild(qText);
+
+    var opts = document.createElement('div');
+    opts.className = 'options';
+
+    ['a', 'b', 'c'].forEach(function(key) {
+      var btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.type = 'button';
+      btn.dataset.q = i;
+      btn.dataset.ans = LABELS[key];
+      btn.innerHTML = '<span class="opt-letter">' + LABELS[key] + '</span>' + escHtml(q[key]);
+      btn.addEventListener('click', function() { selectAnswer(i, LABELS[key]); });
+      opts.appendChild(btn);
+    });
+
+    card.appendChild(opts);
+    wrap.appendChild(card);
+  });
+})();
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAnswer(qIdx, ans) {
+  answers[qIdx] = ans;
+
+  // Update button styles
+  var card = document.getElementById('card-' + qIdx);
+  card.querySelectorAll('.option-btn').forEach(function(btn) {
+    btn.classList.toggle('selected', btn.dataset.ans === ans);
+  });
+  card.classList.add('answered');
+
+  updateUI();
+}
+
+function updateUI() {
+  var answered = answers.filter(function(a) { return a !== null; }).length;
+  var pct = (answered / TOTAL) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = answered + '\u00a0из\u00a0' + TOTAL;
+
+  var remaining = TOTAL - answered;
+  var note = document.getElementById('remainingNote');
+  if (remaining === 0) {
+    note.textContent = 'Все вопросы отвечены';
+  } else if (remaining === TOTAL) {
+    note.textContent = 'Ответьте на все 24 вопроса';
+  } else {
+    note.textContent = 'Осталось: ' + remaining;
+  }
+
+  document.getElementById('submitBtn').disabled = (remaining > 0);
+}
+
+// ── BUILD EXPORT STRING ──────────────────────────────────────────────────────
+function buildExport() {
+  var today = new Date().toISOString().slice(0, 10);
+  var parts = answers.map(function(ans, i) {
+    return (i + 1) + ':' + (ans || '?');
+  });
+  return [
+    'ТЕСТ: professional-type',
+    'ДАТА: ' + today,
+    parts.join(' ')
+  ].join('\n');
+}
+
+// ── OPEN RESULT OVERLAY ──────────────────────────────────────────────────────
+function openResult() {
+  document.getElementById('exportBox').textContent = buildExport();
+  document.getElementById('overlay').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── COPY BUTTON ──────────────────────────────────────────────────────────────
+document.getElementById('copyBtn').addEventListener('click', function() {
+  var text = document.getElementById('exportBox').textContent;
+  var btn = document.getElementById('copyBtn');
+
+  function markCopied() {
+    btn.textContent = 'Скопировано ✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Скопировать';
+      btn.classList.remove('copied');
+    }, 3500);
+  }
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallback);
+  } else { fallback(); }
+
+  function fallback() {
+    var el = document.getElementById('exportBox');
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    try { document.execCommand('copy'); markCopied(); } catch(e) {}
+    sel.removeAllRanges();
+  }
+});
+
+// ── CLOSE OVERLAY ON BACKDROP CLICK ─────────────────────────────────────────
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+</script>
+</body>
+</html>

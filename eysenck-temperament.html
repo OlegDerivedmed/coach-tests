@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест Айзенка — Темперамент (EPI)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #d97706;
+      --primary-light: #fef3c7;
+      --primary-dark: #b45309;
+      --text: #1e293b;
+      --muted: #64748b;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgb(217 119 6 / 0.3);
+    }
+
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .header h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .header-meta { font-size: 0.75rem; opacity: 0.75; white-space: nowrap; }
+
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: white; border-radius: 3px; transition: width 0.35s ease; width: 0%; }
+    .progress-label { font-size: 0.7rem; opacity: 0.9; white-space: nowrap; min-width: 52px; text-align: right; }
+
+    .instruction {
+      margin: 16px 16px 8px;
+      padding: 14px 16px;
+      background: var(--primary-light);
+      border-left: 3px solid var(--primary);
+      border-radius: 10px;
+      font-size: 0.875rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .questions { padding: 8px 16px 140px; display: flex; flex-direction: column; gap: 10px; }
+
+    .q-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
+      transition: border-color 0.2s;
+    }
+    .q-card.answered { border-color: var(--primary); background: #fffcf5; }
+
+    .q-num {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+
+    .q-text { font-size: 0.92rem; line-height: 1.5; margin-bottom: 12px; color: var(--text); }
+
+    .choices { display: flex; gap: 10px; }
+
+    .choice {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.95rem; font-weight: 500;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .choice:active { transform: scale(0.98); }
+    .choice.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid var(--border);
+      padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;
+      z-index: 15; box-shadow: 0 -2px 10px rgb(0 0 0 / 0.06);
+    }
+    .submit-btn {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: var(--primary); color: white; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .remaining-note { text-align: center; font-size: 0.75rem; color: var(--muted); }
+
+    /* ── OVERLAY ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      background: white; width: 100%; max-width: 500px;
+      border-radius: 20px 20px 0 0; padding: 20px 20px 32px;
+      max-height: 85vh; overflow-y: auto;
+      transform: translateY(100%); transition: transform 0.35s ease;
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+    .handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 0 auto 16px; }
+    .sheet-icon { font-size: 2.5rem; text-align: center; margin-bottom: 8px; }
+    .sheet-title { font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    .sheet-desc { font-size: 0.85rem; color: var(--muted); text-align: center; margin-bottom: 20px; line-height: 1.5; }
+    .export-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+    .export-box {
+      background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 0.78rem; line-height: 1.7; white-space: pre-wrap; word-break: break-all;
+      margin-bottom: 14px; max-height: 180px; overflow-y: auto;
+    }
+    .copy-btn {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      background: var(--success); color: white; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .copy-btn.copied { background: #166534; }
+    .copy-hint { text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Тест Айзенка — Темперамент (EPI)</h1>
+    <span class="header-meta">57 вопросов</span>
+  </div>
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressLabel">0 / 57</span>
+  </div>
+</div>
+
+<div class="instruction">
+  Ответьте на каждый вопрос <strong>«Да»</strong> или <strong>«Нет»</strong>. Отвечайте быстро, не задумываясь. Нет правильных или неправильных ответов — важна ваша первая, естественная реакция.
+</div>
+
+<div class="questions" id="questions"></div>
+
+<div class="bottom-bar">
+  <div class="remaining-note" id="remainingNote">Осталось: <span id="remainingCount">57</span> вопросов</div>
+  <button class="submit-btn" id="submitBtn" disabled>Завершить тест</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-icon">&#10004;&#65039;</div>
+    <div class="sheet-title">Тест пройден!</div>
+    <div class="sheet-desc">Скопируйте текст ниже и отправьте его своему коучу — в Telegram, WhatsApp или по email.</div>
+    <div class="export-label">Ваши ответы для коуча</div>
+    <div class="export-box" id="exportBox"></div>
+    <button class="copy-btn" id="copyBtn">Скопировать</button>
+    <div class="copy-hint">После копирования отправьте этот текст коучу.<br>Можно сделать скриншот этого экрана.</div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  "Часто ли вы испытываете тягу к новым впечатлениям, к тому, чтобы отвлечься, испытывать сильные ощущения?",
+  "Часто ли вы чувствуете, что нуждаетесь в друзьях, которые могут вас понять, ободрить или посочувствовать?",
+  "Считаете ли вы себя беззаботным человеком?",
+  "Очень ли трудно вам отказываться от своих намерений?",
+  "Обдумываете ли вы свои дела не спеша и предпочитаете ли подождать, прежде чем действовать?",
+  "Всегда ли вы сдерживаете свои обещания, даже если это вам невыгодно?",
+  "Часто ли у вас бывают спады и подъёмы настроения?",
+  "Быстро ли вы обычно действуете и говорите, не тратите ли много времени на обдумывание?",
+  "Возникало ли у вас когда-нибудь чувство, что вы несчастны, хотя никакой серьёзной причины для этого не было?",
+  "Верно ли, что на спор вы способны решиться на всё?",
+  "Смущаетесь ли вы, когда хотите познакомиться с человеком противоположного пола, который вам симпатичен?",
+  "Бывает ли когда-нибудь, что, разозлившись, вы выходите из себя?",
+  "Часто ли бывает, что вы действуете необдуманно, под влиянием момента?",
+  "Часто ли вас беспокоят мысли о том, что вам не следовало чего-либо делать или говорить?",
+  "Предпочитаете ли вы чтение книг встречам с людьми?",
+  "Верно ли, что вас легко задеть?",
+  "Любите ли вы часто бывать в компании?",
+  "Бывают ли иногда у вас такие мысли, которыми вам не хотелось бы делиться с другими людьми?",
+  "Верно ли, что иногда вы настолько полны энергии, что всё горит в руках, а иногда чувствуете сильную вялость?",
+  "Стараетесь ли вы ограничить круг своих знакомых небольшим числом самых близких друзей?",
+  "Много ли вы мечтаете?",
+  "Когда на вас кричат, отвечаете ли вы тем же?",
+  "Считаете ли вы все свои привычки хорошими?",
+  "Часто ли у вас появляется чувство, что вы в чём-то виноваты?",
+  "Способны ли вы иногда дать волю своим чувствам и беззаботно развлечься с весёлой компанией?",
+  "Можно ли сказать, что нервы у вас часто бывают натянуты до предела?",
+  "Слывёте ли вы за человека живого и весёлого?",
+  "После того как дело сделано, часто ли вы мысленно возвращаетесь к нему и думаете, что могли бы сделать лучше?",
+  "Чувствуете ли вы себя неспокойно, находясь в большой компании?",
+  "Бывает ли, что вы передаёте слухи?",
+  "Бывает ли, что вам не спится из-за того, что в голову лезут разные мысли?",
+  "Если вы хотите что-то узнать, вы предпочтёте найти в книге, а не спросить у друзей?",
+  "Бывают ли у вас сильные сердцебиения?",
+  "Нравится ли вам работа, требующая сосредоточения?",
+  "Бывают ли у вас приступы дрожи?",
+  "Всегда ли вы говорите только правду?",
+  "Бывает ли вам неприятно находиться в компании, где все подшучивают друг над другом?",
+  "Раздражительны ли вы?",
+  "Нравится ли вам работа, требующая быстрого действия?",
+  "Верно ли, что вам часто не дают покоя мысли о разных неприятностях, которые могли бы произойти, хотя всё кончилось благополучно?",
+  "Верно ли, что вы неторопливы в движениях и несколько медлительны?",
+  "Опаздывали ли вы когда-нибудь на работу или на встречу с кем-либо?",
+  "Часто ли вам снятся кошмары?",
+  "Верно ли, что вы так любите поговорить, что не упускаете любого удобного случая побеседовать с новым человеком?",
+  "Беспокоят ли вас какие-нибудь боли?",
+  "Огорчились бы вы, если бы долго не могли видеться со своими друзьями?",
+  "Можете ли вы назвать себя нервным человеком?",
+  "Есть ли среди ваших знакомых такие, которые вам явно не нравятся?",
+  "Могли бы вы сказать, что вы уверенный в себе человек?",
+  "Легко ли вас задевает критика ваших недостатков или вашей работы?",
+  "Трудно ли вам получить настоящее удовольствие от мероприятий, в которых участвует много народа?",
+  "Беспокоит ли вас чувство, что вы чем-то хуже других?",
+  "Сумели бы вы внести оживление в скучную компанию?",
+  "Бывает ли, что вы говорите о вещах, в которых совсем не разбираетесь?",
+  "Беспокоитесь ли вы о своём здоровье?",
+  "Любите ли вы подшутить над другими?",
+  "Страдаете ли вы бессонницей?"
+];
+
+const TOTAL = QUESTIONS.length;
+const answers = new Array(TOTAL).fill(null);
+
+function render() {
+  const container = document.getElementById('questions');
+  QUESTIONS.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = 'q' + i;
+    card.innerHTML =
+      '<div class="q-num">Вопрос ' + (i + 1) + ' из ' + TOTAL + '</div>' +
+      '<div class="q-text">' + q + '</div>' +
+      '<div class="choices">' +
+        '<button class="choice" onclick="pick(' + i + ',1)">Да</button>' +
+        '<button class="choice" onclick="pick(' + i + ',0)">Нет</button>' +
+      '</div>';
+    container.appendChild(card);
+  });
+}
+
+function pick(idx, val) {
+  answers[idx] = val ? 'Да' : 'Нет';
+  var card = document.getElementById('q' + idx);
+  card.classList.add('answered');
+  var btns = card.querySelectorAll('.choice');
+  btns[0].classList.toggle('selected', val === 1);
+  btns[1].classList.toggle('selected', val === 0);
+  updateUI();
+}
+
+function updateUI() {
+  var done = answers.filter(function(a) { return a !== null; }).length;
+  var remaining = TOTAL - done;
+  var pct = (done / TOTAL * 100).toFixed(1);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done + ' / ' + TOTAL;
+  document.getElementById('remainingCount').textContent = remaining;
+  var btn = document.getElementById('submitBtn');
+  var note = document.getElementById('remainingNote');
+  btn.disabled = done < TOTAL;
+  note.style.visibility = done < TOTAL ? 'visible' : 'hidden';
+}
+
+function buildExport() {
+  var today = new Date().toISOString().slice(0, 10);
+  var pairs = answers.map(function(a, i) {
+    return (i + 1) + ':' + (a === 'Да' ? 'Да' : 'Нет');
+  }).join(' ');
+  return 'ТЕСТ: eysenck-temperament\nДАТА: ' + today + '\n' + pairs;
+}
+
+document.getElementById('submitBtn').addEventListener('click', function() {
+  document.getElementById('exportBox').textContent = buildExport();
+  document.getElementById('overlay').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  var text = document.getElementById('exportBox').textContent;
+  var btn = document.getElementById('copyBtn');
+  function markCopied() {
+    btn.textContent = 'Скопировано \u2713';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Скопировать'; btn.classList.remove('copied'); }, 3500);
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallback);
+  } else { fallback(); }
+  function fallback() {
+    var el = document.getElementById('exportBox');
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges(); sel.addRange(range);
+    try { document.execCommand('copy'); markCopied(); } catch(e) {}
+    sel.removeAllRanges();
+  }
+});
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+  }
+});
+
+render();
+updateUI();
+</script>
+</body>
+</html>

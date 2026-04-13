@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPIP-NEO-120 — Большая Пятёрка</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6366f1;
+      --primary-light: #eef2ff;
+      --primary-dark: #4f46e5;
+      --text: #1e293b;
+      --muted: #64748b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 16px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgb(99 102 241 / 0.3);
+    }
+    .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .header h1 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .header-meta { font-size: 0.75rem; opacity: 0.75; white-space: nowrap; }
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+    .progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: white; border-radius: 3px; transition: width 0.35s ease; width: 0%; }
+    .progress-label { font-size: 0.7rem; opacity: 0.9; white-space: nowrap; min-width: 52px; text-align: right; }
+
+    .instruction {
+      margin: 16px 16px 8px;
+      padding: 14px 16px;
+      background: var(--primary-light);
+      border-left: 3px solid var(--primary);
+      border-radius: 10px;
+      font-size: 0.875rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    .scale-hint {
+      margin: 0 16px 8px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .scale-hint-item {
+      flex: 1;
+      min-width: 52px;
+      text-align: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 4px;
+    }
+    .scale-hint-num { font-size: 1rem; font-weight: 700; color: var(--primary); }
+    .scale-hint-text { font-size: 0.58rem; color: var(--muted); line-height: 1.3; margin-top: 2px; }
+
+    .section-label {
+      margin: 12px 16px 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .questions { padding: 4px 16px 140px; display: flex; flex-direction: column; gap: 8px; }
+
+    .q-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .q-card.answered { border-color: var(--primary); background: #f5f3ff; }
+
+    .q-num {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .q-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .likert {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .likert-btn {
+      flex: 1;
+      max-width: 58px;
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+    .likert-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .likert-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      transform: scale(1.08);
+      box-shadow: 0 2px 8px rgb(99 102 241 / 0.35);
+    }
+
+    .likert-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      padding: 0 2px;
+    }
+    .likert-labels span {
+      font-size: 0.6rem;
+      color: var(--muted);
+      max-width: 72px;
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 16px;
+      background: white;
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -4px 16px rgb(0 0 0 / 0.08);
+      z-index: 20;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .submit-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+    .submit-btn:not(:disabled):hover { background: var(--primary-dark); }
+
+    .remaining-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 7px;
+    }
+
+    /* Results */
+    .results-page { display: none; padding: 16px 16px 80px; }
+    .results-page.visible { display: block; }
+
+    .results-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      text-align: center;
+      margin: 20px 0 6px;
+      color: var(--text);
+    }
+    .results-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .copy-box {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      word-break: break-all;
+    }
+    .copy-box-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .copy-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .copy-btn:hover { background: var(--primary-dark); }
+
+    .chart-section {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .chart-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .bar-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      min-width: 110px;
+      color: var(--text);
+    }
+    .bar-track {
+      flex: 1;
+      height: 20px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 0%;
+    }
+    .bar-score {
+      font-size: 0.72rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: right;
+      color: var(--muted);
+    }
+
+    .factor-N .bar-fill { background: linear-gradient(90deg, #f87171, #ef4444); }
+    .factor-E .bar-fill { background: linear-gradient(90deg, #fb923c, #f97316); }
+    .factor-O .bar-fill { background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
+    .factor-A .bar-fill { background: linear-gradient(90deg, #34d399, #10b981); }
+    .factor-C .bar-fill { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+
+    .facet-bar-fill { background: #cbd5e1; }
+
+    .factor-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 10px;
+    }
+    .factor-badge {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; color: white;
+    }
+    .badge-N { background: #ef4444; }
+    .badge-E { background: #f97316; }
+    .badge-O { background: #8b5cf6; }
+    .badge-A { background: #10b981; }
+    .badge-C { background: #3b82f6; }
+    .factor-name { font-size: 0.9rem; font-weight: 700; }
+    .factor-score-big { font-size: 0.9rem; font-weight: 800; margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<div id="testPage">
+  <div class="header">
+    <div class="header-top">
+      <h1>Личностный опросник (IPIP-NEO-120)</h1>
+      <span class="header-meta">120 вопросов</span>
+    </div>
+    <div class="progress-row">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0 / 120</span>
+    </div>
+  </div>
+
+  <div class="instruction">
+    Прочитайте каждое утверждение и оцените, насколько точно оно описывает вас — такого, какой вы есть на самом деле. Здесь нет правильных или неправильных ответов. Отвечайте честно и не раздумывая слишком долго.
+  </div>
+
+  <div class="scale-hint">
+    <div class="scale-hint-item"><div class="scale-hint-num">1</div><div class="scale-hint-text">Совсем не про меня</div></div>
+    <div class="scale-hint-item"><div class="scale-hint-num">2</div><div class="scale-hint-text">Скорее не про меня</div></div>
+    <div class="scale-hint-item"><div class="scale-hint-num">3</div><div class="scale-hint-text">Нейтрально</div></div>
+    <div class="scale-hint-item"><div class="scale-hint-num">4</div><div class="scale-hint-text">Скорее про меня</div></div>
+    <div class="scale-hint-item"><div class="scale-hint-num">5</div><div class="scale-hint-text">Полностью про меня</div></div>
+  </div>
+
+  <div class="questions" id="questionsContainer"></div>
+
+  <div class="footer">
+    <button class="submit-btn" id="submitBtn" disabled onclick="showResults()">Получить результаты</button>
+    <div class="remaining-note" id="remainingNote">Ответьте на все 120 вопросов</div>
+  </div>
+</div>
+
+<div class="results-page" id="resultsPage">
+  <div class="results-title">Ваш профиль личности</div>
+  <div class="results-subtitle">IPIP-NEO-120 · <span id="resultDate"></span></div>
+
+  <div class="copy-box-label">Скопируйте и отправьте коучу:</div>
+  <div class="copy-box" id="copyBox">—</div>
+  <button class="copy-btn" onclick="copyResults()">Скопировать результаты</button>
+
+  <div id="chartsContainer"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // N
+  "Беспокоюсь по разным поводам",
+  "Опасаюсь худшего",
+  "Многого боюсь",
+  "Легко подвергаюсь стрессу",
+  "Легко злюсь",
+  "Легко раздражаюсь",
+  "Теряю самообладание",
+  "Меня нелегко разозлить",
+  "Часто бываю в подавленном настроении",
+  "Не нравлюсь себе",
+  "Часто нахожусь в унынии",
+  "Чувствую себя комфортно в своей шкуре",
+  "Мне трудно подходить к незнакомым людям",
+  "Боюсь привлекать к себе внимание",
+  "Чувствую себя непринуждённо только с близкими",
+  "Сложные социальные ситуации меня не смущают",
+  "Случаются у меня периоды злоупотреблений (еда, алкоголь и т.п.)",
+  "Редко позволяю себе лишнего",
+  "Легко сопротивляюсь соблазнам",
+  "Умею контролировать свои порывы",
+  "Легко впадаю в панику",
+  "Чувствую себя подавленным(ой) событиями",
+  "Чувствую, что не справляюсь с ситуацией",
+  "Сохраняю спокойствие под давлением",
+  // E
+  "Легко завожу друзей",
+  "Чувствую себя легко среди людей",
+  "Избегаю контактов с людьми",
+  "Держу людей на расстоянии",
+  "Люблю большие вечеринки",
+  "Общаюсь с множеством разных людей на вечеринках",
+  "Предпочитаю одиночество",
+  "Избегаю толпы",
+  "Беру всё в свои руки",
+  "Стремлюсь руководить другими",
+  "Стремлюсь контролировать ситуацию",
+  "Жду, пока другие возьмут инициативу",
+  "Всегда занят(а) делами",
+  "Постоянно в движении",
+  "Много делаю в свободное время",
+  "Предпочитаю не торопиться",
+  "Люблю острые ощущения",
+  "Ищу приключений",
+  "Получаю удовольствие от риска",
+  "Люблю вести себя безбашенно",
+  "Излучаю радость",
+  "Получаю массу удовольствия от жизни",
+  "Люблю жизнь",
+  "Смотрю на жизнь с оптимизмом",
+  // O
+  "Обладаю яркой фантазией",
+  "Наслаждаюсь смелыми полётами воображения",
+  "Люблю мечтать",
+  "Люблю погружаться в размышления",
+  "Считаю искусство важной частью жизни",
+  "Вижу красоту там, где другие её не замечают",
+  "Не люблю поэзию",
+  "Не получаю удовольствия от посещения художественных музеев",
+  "Переживаю эмоции очень интенсивно",
+  "Чувствую эмоции других людей",
+  "Редко замечаю свои эмоциональные реакции",
+  "Не понимаю людей, которые легко теряют самообладание",
+  "Предпочитаю разнообразие рутине",
+  "Предпочитаю придерживаться того, что знаю",
+  "Не люблю перемен",
+  "Привязан(а) к привычным способам делать вещи",
+  "Люблю читать сложный материал",
+  "Избегаю философских дискуссий",
+  "С трудом понимаю абстрактные идеи",
+  "Не интересуюсь теоретическими дискуссиями",
+  "Склонен(на) поддерживать либеральные взгляды",
+  "Считаю, что нет абсолютного правильного и неправильного",
+  "Склонен(на) поддерживать консервативные взгляды",
+  "Считаю, что с преступностью нужно бороться жёстко",
+  // A
+  "Доверяю людям",
+  "Считаю, что у людей в целом добрые намерения",
+  "Верю тому, что говорят люди",
+  "Не доверяю людям",
+  "Использую других в своих целях",
+  "Обманываю, чтобы добиться своего",
+  "Пользуюсь людьми в своих интересах",
+  "Мешаю планам других",
+  "Беспокоюсь о благополучии других",
+  "Люблю помогать другим",
+  "Безразличен(на) к чувствам других",
+  "Не уделяю времени другим",
+  "Люблю хорошую ссору",
+  "Ору на людей",
+  "Оскорбляю людей",
+  "Мщу людям за обиды",
+  "Считаю себя лучше других",
+  "Высокого мнения о себе",
+  "Считаю себя незаурядной личностью",
+  "Хвастаюсь своими достоинствами",
+  "Сочувствую бездомным и обездоленным",
+  "Сочувствую тем, кто живёт хуже меня",
+  "Меня не интересуют чужие проблемы",
+  "Стараюсь не думать о нуждающихся",
+  // C
+  "Успешно выполняю поставленные задачи",
+  "Преуспеваю в том, чем занимаюсь",
+  "Справляюсь с делами легко и умело",
+  "Умею доводить дела до конца",
+  "Люблю наводить порядок",
+  "Часто забываю класть вещи на место",
+  "Оставляю беспорядок в комнате",
+  "Разбрасываю свои вещи",
+  "Держу обещания",
+  "Говорю правду",
+  "Нарушаю правила",
+  "Нарушаю обещания",
+  "Делаю больше, чем от меня ожидают",
+  "Усердно работаю",
+  "Трачу мало времени и сил на работу",
+  "Делаю ровно столько, сколько нужно",
+  "Всегда готов(а) к делу",
+  "Реализую свои планы",
+  "Трачу время впустую",
+  "С трудом приступаю к задачам",
+  "Бросаюсь в дело, не думая",
+  "Принимаю поспешные решения",
+  "Тороплюсь с выводами и действиями",
+  "Действую, не думая"
+];
+
+// Keying: true = positive (score as-is), false = reverse (6 - score)
+const KEYS = [
+  // N1-N6
+  true,true,true,true,   // N1
+  true,true,true,false,  // N2
+  true,true,true,false,  // N3
+  true,true,true,false,  // N4
+  true,false,false,false,// N5
+  true,true,true,false,  // N6
+  // E1-E6
+  true,true,false,false, // E1
+  true,true,false,false, // E2
+  true,true,true,false,  // E3
+  true,true,true,false,  // E4
+  true,true,true,true,   // E5
+  true,true,true,true,   // E6
+  // O1-O6
+  true,true,true,true,   // O1
+  true,true,false,false, // O2
+  true,true,false,false, // O3
+  true,false,false,false,// O4
+  true,false,false,false,// O5
+  true,true,false,false, // O6
+  // A1-A6
+  true,true,true,false,  // A1
+  false,false,false,false,//A2
+  true,true,false,false, // A3
+  false,false,false,false,//A4
+  false,false,false,false,//A5
+  true,true,false,false, // A6
+  // C1-C6
+  true,true,true,true,   // C1
+  true,false,false,false,// C2
+  true,true,false,false, // C3
+  true,true,false,false, // C4
+  true,true,false,false, // C5
+  false,false,false,false// C6
+];
+
+const FACETS = [
+  {code:'N1',name:'Тревожность',factor:'N'},
+  {code:'N2',name:'Раздражительность',factor:'N'},
+  {code:'N3',name:'Уныние',factor:'N'},
+  {code:'N4',name:'Застенчивость',factor:'N'},
+  {code:'N5',name:'Несдержанность',factor:'N'},
+  {code:'N6',name:'Уязвимость',factor:'N'},
+  {code:'E1',name:'Дружелюбие',factor:'E'},
+  {code:'E2',name:'Общительность',factor:'E'},
+  {code:'E3',name:'Напористость',factor:'E'},
+  {code:'E4',name:'Активность',factor:'E'},
+  {code:'E5',name:'Поиск острых ощущений',factor:'E'},
+  {code:'E6',name:'Жизнерадостность',factor:'E'},
+  {code:'O1',name:'Воображение',factor:'O'},
+  {code:'O2',name:'Худ. интересы',factor:'O'},
+  {code:'O3',name:'Эмоциональность',factor:'O'},
+  {code:'O4',name:'Авантюризм',factor:'O'},
+  {code:'O5',name:'Интеллектуальность',factor:'O'},
+  {code:'O6',name:'Либерализм',factor:'O'},
+  {code:'A1',name:'Доверчивость',factor:'A'},
+  {code:'A2',name:'Нравственность',factor:'A'},
+  {code:'A3',name:'Альтруизм',factor:'A'},
+  {code:'A4',name:'Кооперативность',factor:'A'},
+  {code:'A5',name:'Скромность',factor:'A'},
+  {code:'A6',name:'Сочувствие',factor:'A'},
+  {code:'C1',name:'Самоэффективность',factor:'C'},
+  {code:'C2',name:'Аккуратность',factor:'C'},
+  {code:'C3',name:'Обязательность',factor:'C'},
+  {code:'C4',name:'Стремление к достижениям',factor:'C'},
+  {code:'C5',name:'Самодисциплина',factor:'C'},
+  {code:'C6',name:'Осмотрительность',factor:'C'},
+];
+
+const FACTOR_NAMES = {
+  N: 'N — Нейротизм',
+  E: 'E — Экстраверсия',
+  O: 'O — Открытость опыту',
+  A: 'A — Доброжелательность',
+  C: 'C — Добросовестность'
+};
+
+const SECTIONS = [
+  {start:0, label:'Блок N — Эмоциональная устойчивость (вопросы 1–24)'},
+  {start:24, label:'Блок E — Экстраверсия (вопросы 25–48)'},
+  {start:48, label:'Блок O — Открытость опыту (вопросы 49–72)'},
+  {start:72, label:'Блок A — Доброжелательность (вопросы 73–96)'},
+  {start:96, label:'Блок C — Добросовестность (вопросы 97–120)'},
+];
+
+const answers = new Array(120).fill(null);
+
+function buildQuestions() {
+  const container = document.getElementById('questionsContainer');
+  SECTIONS.forEach(sec => {
+    const lbl = document.createElement('div');
+    lbl.className = 'section-label';
+    lbl.textContent = sec.label;
+    container.appendChild(lbl);
+    for (let i = sec.start; i < sec.start + 24; i++) {
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.id = 'q' + i;
+      card.innerHTML = `
+        <div class="q-num">Вопрос ${i+1}</div>
+        <div class="q-text">${QUESTIONS[i]}</div>
+        <div class="likert" id="likert${i}">
+          ${[1,2,3,4,5].map(v => `<button class="likert-btn" onclick="answer(${i},${v})">${v}</button>`).join('')}
+        </div>
+        <div class="likert-labels">
+          <span>Совсем не про меня</span>
+          <span style="text-align:right">Полностью про меня</span>
+        </div>`;
+      container.appendChild(card);
+    }
+  });
+}
+
+function answer(qi, val) {
+  answers[qi] = val;
+  const btns = document.querySelectorAll(`#likert${qi} .likert-btn`);
+  btns.forEach((b, i) => b.classList.toggle('selected', i+1 === val));
+  document.getElementById('q'+qi).classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = answers.filter(a => a !== null).length;
+  const pct = (done / 120) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done + ' / 120';
+  const btn = document.getElementById('submitBtn');
+  const note = document.getElementById('remainingNote');
+  if (done === 120) {
+    btn.disabled = false;
+    note.textContent = 'Все вопросы отвечены — готово!';
+  } else {
+    btn.disabled = true;
+    note.textContent = `Осталось: ${120 - done} вопросов`;
+  }
+}
+
+function computeScores() {
+  // Compute facet scores
+  const facetScores = {};
+  FACETS.forEach((f, fi) => {
+    let sum = 0;
+    for (let j = 0; j < 4; j++) {
+      const qi = fi * 4 + j;
+      const raw = answers[qi];
+      sum += KEYS[qi] ? raw : (6 - raw);
+    }
+    facetScores[f.code] = sum;
+  });
+  // Compute factor scores
+  const factorScores = {N:0, E:0, O:0, A:0, C:0};
+  FACETS.forEach(f => { factorScores[f.factor] += facetScores[f.code]; });
+  return {facetScores, factorScores};
+}
+
+function showResults() {
+  const {facetScores, factorScores} = computeScores();
+  const today = new Date().toISOString().slice(0,10);
+
+  // Build export string
+  const parts = answers.map((a,i) => `${i+1}:${a}`).join(' ');
+  const exportStr = `ТЕСТ: ipip-neo\nДАТА: ${today}\n${parts}`;
+  document.getElementById('copyBox').textContent = exportStr;
+  document.getElementById('resultDate').textContent = today;
+
+  // Build charts
+  const charts = document.getElementById('chartsContainer');
+  charts.innerHTML = '';
+
+  ['N','E','O','A','C'].forEach(factor => {
+    const sec = document.createElement('div');
+    sec.className = 'chart-section';
+
+    const fs = factorScores[factor];
+    const pct = ((fs - 24) / 96) * 100;
+
+    sec.innerHTML = `
+      <div class="factor-header">
+        <div class="factor-badge badge-${factor}">${factor}</div>
+        <div class="factor-name">${FACTOR_NAMES[factor]}</div>
+        <div class="factor-score-big factor-${factor}" style="color:var(--primary)">${fs} / 120</div>
+      </div>
+      <div class="bar-row factor-${factor}" style="margin-bottom:16px">
+        <div class="bar-track" style="height:24px">
+          <div class="bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="chart-title">Фасеты</div>
+      ${FACETS.filter(f=>f.factor===factor).map(f => {
+        const score = facetScores[f.code];
+        const fp = ((score-4)/16)*100;
+        return `<div class="bar-row">
+          <div class="bar-label">${f.code}: ${f.name}</div>
+          <div class="bar-track"><div class="bar-fill facet-bar-fill" style="width:${fp}%"></div></div>
+          <div class="bar-score">${score}</div>
+        </div>`;
+      }).join('')}
+    `;
+    charts.appendChild(sec);
+  });
+
+  document.getElementById('testPage').style.display = 'none';
+  const rp = document.getElementById('resultsPage');
+  rp.classList.add('visible');
+  window.scrollTo(0,0);
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      const w = b.style.width;
+      b.style.width = '0%';
+      requestAnimationFrame(() => { b.style.width = w; });
+    });
+  }, 100);
+}
+
+function copyResults() {
+  const text = document.getElementById('copyBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => { btn.textContent = 'Скопировать результаты'; }, 2000);
+  });
+}
+
+buildQuestions();
+</script>
+</body>
+</html>

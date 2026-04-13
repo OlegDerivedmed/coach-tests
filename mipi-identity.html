@@ -55,14 +55,25 @@
     .instruction p {
       font-size: 0.9rem;
       color: var(--text);
-      line-height: 1.55;
+      line-height: 1.6;
       max-width: 640px;
       margin: 0 auto;
+    }
+    .instruction .warn {
+      margin-top: 10px;
+      padding: 10px 13px;
+      background: #fefce8;
+      border-left: 3px solid #ca8a04;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      color: #78350f;
+      line-height: 1.55;
+      max-width: 640px;
     }
     .instruction .note {
       font-size: 0.78rem;
       color: var(--muted);
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     /* ── WORDS GRID ── */
@@ -246,12 +257,16 @@
 </div>
 
 <div class="instruction">
-  <p>Отметьте слова, которые имеют отношение к вам и вашей профессиональной жизни.</p>
-  <p class="note">Нет правильных и неправильных ответов. Работайте быстро — выбирайте по первому ощущению.</p>
+  <p>Ниже — список слов. Отметьте те, которые точно описывают <strong>вас и вашу профессиональную жизнь прямо сейчас</strong>.</p>
+  <div class="warn">
+    ⚠️ Выбирайте только то, что <strong>есть в вас сегодня</strong> — не то, каким хотите стать, и не то, каким были раньше.<br>
+    Например: «Мастерство» — только если вы <em>ощущаете</em> его в себе сейчас, а не стремитесь к нему. «Уверенность» — только если она есть прямо сейчас, а не «в целом я уверенный человек».
+  </div>
+  <p class="note">Нет правильных и неправильных ответов. Работайте быстро — доверьтесь первой реакции, не обдумывайте долго.</p>
 </div>
 
 <div class="words-wrap">
-  <h2>Слова</h2>
+  <h2>Слова-стимулы — 74 слова</h2>
   <div class="words-grid" id="wordsGrid"></div>
 </div>
 

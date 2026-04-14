@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Опросник Шмишека</title>
+<style>
+:root{--primary:#1d4ed8;--primary-light:#dbeafe;--primary-dark:#1e40af;--text:#1e293b;--muted:#64748b;--bg:#f8f9fa;--card:#fff;--border:#e2e8f0;--success:#16a34a;--radius:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+.header{position:sticky;top:0;z-index:20;background:var(--primary);color:#fff;padding:14px 16px 12px;text-align:center}
+.header h1{font-size:1rem;font-weight:700}
+.header small{display:block;opacity:.75;font-size:.75rem;margin-top:2px}
+.progress-wrap{margin-top:10px;display:flex;align-items:center;gap:8px}
+.progress-bar{flex:1;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:#fff;border-radius:3px;transition:width .3s}
+.progress-text{font-size:.75rem;min-width:52px;text-align:right}
+.instruction{background:var(--card);padding:16px;border-bottom:1px solid var(--border);font-size:.875rem;line-height:1.5;color:var(--muted)}
+.questions{padding:8px 0}
+.q-item{background:var(--card);margin:6px 12px;border-radius:var(--radius);padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.q-item.answered{opacity:.85}
+.q-text{font-size:.9rem;line-height:1.45;margin-bottom:10px}
+.q-num{font-weight:700;color:var(--primary);margin-right:4px}
+.q-btns{display:flex;gap:8px}
+.q-btn{flex:1;padding:9px 0;border:1.5px solid var(--border);border-radius:10px;background:var(--card);font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--text)}
+.q-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.q-btn.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.bottom-bar{position:sticky;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.status-text{font-size:.8rem;color:var(--muted)}
+.submit-btn{padding:10px 28px;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;background:var(--primary);color:#fff;transition:opacity .2s}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.open{opacity:1;pointer-events:auto}
+.sheet{background:var(--card);width:100%;max-height:85vh;border-radius:20px 20px 0 0;padding:12px 20px 32px;overflow-y:auto;transform:translateY(40px);transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.overlay.open .sheet{transform:translateY(0)}
+.handle{width:36px;height:4px;background:#cbd5e1;border-radius:2px;margin:0 auto 16px}
+.sheet-icon{font-size:2rem;text-align:center}
+.sheet h2{text-align:center;font-size:1.1rem;margin:8px 0 4px}
+.sheet p{text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.export-box{background:#f1f5f9;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:monospace;font-size:.78rem;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow-y:auto;margin-bottom:12px}
+.copy-btn{display:block;width:100%;padding:12px;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;background:var(--primary);color:#fff;transition:background .2s}
+.copy-btn.copied{background:var(--success)}
+.hint{text-align:center;font-size:.78rem;color:var(--muted);margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Опросник Шмишека</h1>
+  <small>Акцентуации личности</small>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0 из 88</div>
+  </div>
+</div>
+
+<div class="instruction">
+  Ответьте на 88 вопросов. Вопросы касаются вашего обычного поведения и самочувствия. Отвечайте быстро, не раздумывая долго. Нет «хороших» или «плохих» ответов.
+</div>
+
+<div class="questions" id="questionsContainer"></div>
+
+<div class="bottom-bar">
+  <span class="status-text" id="statusText">Отвечено: 0 из 88</span>
+  <button class="submit-btn" id="submitBtn" disabled onclick="openResult()">Готово</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-icon">&#9989;</div>
+    <h2>Тест пройден!</h2>
+    <p>Скопируйте текст ниже и отправьте коучу</p>
+    <div class="export-box" id="exportBox"></div>
+    <button class="copy-btn" id="copyBtn">Скопировать</button>
+    <div class="hint">После копирования отправьте этот текст коучу.</div>
+  </div>
+</div>
+
+<script>
+var QUESTIONS=[
+"Является ли ваше настроение в общем вес\u0451лым и беззаботным?",
+"Восприимчивы ли вы к обидам?",
+"Случалось ли вам иногда быстро заплакать?",
+"Всегда ли вы считаете себя правым в том деле, которое делаете, и вы не успокоитесь, пока не убедитесь в этом?",
+"Считаете ли вы себя более смелым, чем в детском возрасте?",
+"Может ли ваше настроение меняться от глубокой радости до глубокой печали?",
+"Находитесь ли вы в компании в центре внимания?",
+"Бывают ли у вас дни, когда вы без достаточных оснований находитесь в угрюмом и раздражительном настроении и ни с кем не хотите разговаривать?",
+"Серь\u0451зный ли вы человек?",
+"Можете ли вы сильно воодушевиться?",
+"Предприимчивы ли вы?",
+"Быстро ли вы забываете, если вас кто-нибудь обидит?",
+"Мягкосердечный ли вы человек?",
+"Пытаетесь ли вы проверить после того, как опустили письмо в почтовый ящик, не осталось ли оно висеть в прорези?",
+"Всегда ли вы стараетесь быть добросовестным в работе?",
+"Испытывали ли вы в детстве страх перед грозой или собаками?",
+"Считаете ли вы других людей недостаточно требовательными друг к другу?",
+"Сильно ли зависит ваше настроение от жизненных событий и переживаний?",
+"Всегда ли вы прямодушны со своими знакомыми?",
+"Часто ли ваше настроение бывает подавленным?",
+"Был ли у вас раньше нервный срыв или сильное истощение?",
+"Склонны ли вы к состояниям сильного внутреннего беспокойства или страстного стремления?",
+"Трудно ли вам длительное время просидеть на стуле?",
+"Бор\u0435тесь ли вы за свои интересы, если кто-то поступает с вами несправедливо?",
+"Легко ли вам обидеть другого человека?",
+"Сильно ли вам мешает косо висящая гардина или неровно настланная скатерть, настолько, что вам хочется немедленно устранить эти недостатки?",
+"Испытывали ли вы в детстве страх, когда оставались одни в квартире?",
+"Часто ли у вас без причины меняется настроение?",
+"Всегда ли вы старательно относитесь к своей деятельности?",
+"Быстро ли вы можете разгневаться?",
+"Можете ли вы быть бесшабашно вес\u0451лым?",
+"Можете ли вы иногда целиком проникнуться чувством радости?",
+"Подходите ли вы для проведения увеселительных мероприятий?",
+"Высказываете ли вы обычно людям сво\u0451 откровенное мнение по тому или иному вопросу?",
+"Влияет ли на вас вид крови?",
+"Охотно ли вы занимаетесь деятельностью, связанной с большой ответственностью?",
+"Склонны ли вы вступиться за человека, с которым поступили несправедливо?",
+"Трудно ли вам входить в т\u0451мный подвал?",
+"Выполняете ли вы кропотливую ч\u0451рную работу так же медленно и тщательно, как и любимое вами дело?",
+"Являетесь ли вы общительным человеком?",
+"Охотно ли вы декламировали в школе стихи?",
+"Убегали ли вы реб\u0451нком из дома?",
+"Тяжело ли вы воспринимаете жизнь?",
+"Бывали ли у вас конфликты и неприятности, которые так изматывали вам нервы, что вы не выходили на работу?",
+"Можно ли сказать, что вы при неудачах не теряете чувство юмора?",
+"Сделаете ли вы первым шаг к примирению, если вас кто-то оскорбит?",
+"Любите ли вы животных?",
+"Уйд\u0451те ли вы с работы или из дому, если у вас там что-то не в порядке?",
+"Мучают ли вас неопредел\u0451нные мысли, что с вами или с вашими родственниками случится какое-нибудь несчастье?",
+"Считаете ли вы, что настроение зависит от погоды?",
+"Затруднит ли вас выступить на сцене перед большим количеством зрителей?",
+"Можете ли вы выйти из себя и дать волю рукам, если вас кто-то умышленно грубо рассердит?",
+"Много ли вы обща\u0435тесь?",
+"Если вы будете чем-либо разочарованы, прид\u0451те ли в отчаяние?",
+"Нравится ли вам работа организаторского характера?",
+"Упорно ли вы стремитесь к своей цели, даже если на пути встречается много препятствий?",
+"Может ли вас так захватить кинофильм, что сл\u0451зы выступят на глазах?",
+"Трудно ли вам будет заснуть, если вы целый день размышляли над своим будущим или какой-нибудь проблемой?",
+"Приходилось ли вам в школьные годы пользоваться подсказками или списывать у товарищей домашнее задание?",
+"Трудно ли вам пойти ночью на кладбище?",
+"Следите ли вы с большим вниманием, чтобы каждая вещь в доме лежала на сво\u0451м месте?",
+"Приходилось ли вам лечь спать в хорошем настроении, а проснуться в удруч\u0451нном и несколько часов оставаться в н\u0451м?",
+"Можете ли вы с л\u0451гкостью приспособиться к новой ситуации?",
+"Есть ли у вас предрасположенность к головной боли?",
+"Часто ли вы сме\u0451тесь?",
+"Можете ли вы быть приветливым с людьми, не открывая своего истинного отношения к ним?",
+"Можно ли вас назвать оживл\u0451нным и бойким человеком?",
+"Сильно ли вы страдаете из-за несправедливости?",
+"Можно ли вас назвать страстным любителем природы?",
+"Есть ли у вас привычка проверять перед сном или перед тем, как уйти, выключен ли газ и свет, закрыта ли дверь?",
+"Пугливы ли вы?",
+"Бывает ли, что вы чувствуете себя на седьмом небе, хотя объективных причин для этого нет?",
+"Охотно ли вы участвовали в юности в кружках художественной самодеятельности, в театральном кружке?",
+"Тянет ли вас иногда смотреть вдаль?",
+"Смотрите ли вы на будущее пессимистически?",
+"Может ли ваше настроение измениться от высочайшей радости до глубокой тоски за короткий период времени?",
+"Легко ли поднимается ваше настроение в дружеской компании?",
+"Переносите ли вы злость длительное время?",
+"Сильно ли вы переживаете, если горе случилось у другого человека?",
+"Была ли у вас в школе привычка переписывать лист в тетради, если вы поставили на него кляксу?",
+"Можно ли сказать, что вы больше недоверчивы и осторожны, нежели доверчивы?",
+"Часто ли вы видите страшные сны?",
+"Бывало ли у вас ощущение навязчивой мысли, от которой никак не удавалось избавиться?",
+"Становитесь ли вы радостным в вес\u0451лом окружении?",
+"Легко ли вы можете отвлечься от обременительных вопросов и не думать о них?",
+"Трудно ли вам сдержать себя, если вы разозлитесь?",
+"Предпочитаете ли вы молчать (Да) или вы словоохотливы (Нет)?",
+"Могли бы вы, если пришлось бы участвовать в театральном представлении, с полным проникновением и перевоплощением войти в роль и забыть о себе?"
+];
+
+var answers={};
+var total=QUESTIONS.length;
+
+function init(){
+  var c=document.getElementById('questionsContainer');
+  for(var i=0;i<total;i++){
+    var n=i+1;
+    var d=document.createElement('div');
+    d.className='q-item';
+    d.id='q'+n;
+    var btnsHtml='<div class="q-btns">';
+    btnsHtml+='<button class="q-btn" data-q="'+n+'" data-v="\u0414\u0430">\u0414\u0430</button>';
+    btnsHtml+='<button class="q-btn" data-q="'+n+'" data-v="\u041d\u0435\u0442">\u041d\u0435\u0442</button>';
+    btnsHtml+='</div>';
+    d.innerHTML='<div class="q-text"><span class="q-num">'+n+'.</span> '+QUESTIONS[i]+'</div>'+btnsHtml;
+    var btns=d.querySelectorAll('.q-btn');
+    btns[0].addEventListener('click',makeHandler(n,'\u0414\u0430'));
+    btns[1].addEventListener('click',makeHandler(n,'\u041d\u0435\u0442'));
+    c.appendChild(d);
+  }
+}
+
+function makeHandler(qn,val){
+  return function(){answer(qn,val);};
+}
+
+function answer(qn,val){
+  answers[qn]=val;
+  var item=document.getElementById('q'+qn);
+  item.classList.add('answered');
+  var btns=item.querySelectorAll('.q-btn');
+  for(var j=0;j<btns.length;j++){
+    if(btns[j].dataset.v===val){btns[j].classList.add('sel');}
+    else{btns[j].classList.remove('sel');}
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  var cnt=Object.keys(answers).length;
+  var pct=Math.round(cnt/total*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressText').textContent=cnt+' \u0438\u0437 '+total;
+  document.getElementById('statusText').textContent='\u041e\u0442\u0432\u0435\u0447\u0435\u043d\u043e: '+cnt+' \u0438\u0437 '+total;
+  document.getElementById('submitBtn').disabled=(cnt<total);
+}
+
+function buildExport(){
+  var today=new Date().toISOString().slice(0,10);
+  var parts=[];
+  for(var i=1;i<=total;i++){
+    parts.push(i+':'+(answers[i]||'?'));
+  }
+  return '\u0422\u0415\u0421\u0422: leonhard-schmishek\n\u0414\u0410\u0422\u0410: '+today+'\n'+parts.join(' ');
+}
+
+function openResult(){
+  document.getElementById('exportBox').textContent=buildExport();
+  document.getElementById('overlay').classList.add('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function markCopied(){
+  var btn=document.getElementById('copyBtn');
+  btn.textContent='\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u2713';
+  btn.classList.add('copied');
+  setTimeout(function(){btn.textContent='\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c';btn.classList.remove('copied');},3500);
+}
+
+document.getElementById('copyBtn').addEventListener('click',function(){
+  var text=document.getElementById('exportBox').textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallbackCopy);
+  }else{fallbackCopy();}
+  function fallbackCopy(){
+    var el=document.getElementById('exportBox');
+    var range=document.createRange();
+    range.selectNodeContents(el);
+    var sel=window.getSelection();
+    sel.removeAllRanges();sel.addRange(range);
+    try{document.execCommand('copy');markCopied();}catch(e){}
+    sel.removeAllRanges();
+  }
+});
+
+document.getElementById('overlay').addEventListener('click',function(e){
+  if(e.target===this)this.classList.remove('open');
+});
+
+init();
+</script>
+</body>
+</html>
